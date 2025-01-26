@@ -1,33 +1,35 @@
-"use client"
+import Link from "next/link";
+import { UserButton, SignedIn } from "@clerk/nextjs";
+import { Pen } from "lucide-react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Input } from "./input";
+import { GalleryVerticalEnd } from "lucide-react";
 
-import { Search } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { UserButton , SignedIn } from "@clerk/nextjs"
-
-export default function Header() {
+export default function NavHeader() {
   return (
-    // <header className="w-full border-b">
-    //   <div className="container flex flex-col gap-2 p-4 md:flex-row md:items-center md:gap-4">
-    //     <div className="relative flex-1">
-    //       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-    //       <Input type="search" placeholder="City, neighborhood, ZIP code..." className="pl-9" />
-    //     </div>
+    <header className="border-b">
+      <div className="flex h-16 items-center px-4 md:px-6">
+        <Link href="/" className="mr-6">
+          <GalleryVerticalEnd className="size-6" />
+        </Link>
 
-    //     <div className="flex flex-wrap items-center gap-2">
-          
-        //   <Button variant="outline">All filters</Button>
-        //   <Button variant="default">Save search</Button>
-      
-        // </div>
-        <div>
-            ff
-        <SignedIn>
+        <div className="ml-auto flex items-center space-x-4">
+          <Button variant="default" className="h-8  bg-black text-white ">
+            Enter Details
+            <Pen className="ml-2 h-4 w-4" />
+          </Button>
+          <Button variant="default" className="h-8   bg-black text-white ">
+            Draw
+            <Pen className="ml-2 h-4 w-4" />
+          </Button>
+          {/* <button className="rounded-full overflow-hidden"> */}
+          <SignedIn>
             <UserButton />
           </SignedIn>
-    //   </div>
-    // </header>
-  )
+          {/* </button> */}
+        </div>
+      </div>
+    </header>
+  );
 }
-
