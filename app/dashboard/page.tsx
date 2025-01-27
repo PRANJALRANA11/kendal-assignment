@@ -38,51 +38,78 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Property {
-  id: string;
+  id: number;
   name: string;
   description: string;
   image: string;
   latitude: number;
   longitude: number;
-  price: string;
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  propertyType: string;
+  area: number;
 }
 
+const initialProperties: Property[] = [
+  {
+    id: 1,
+    name: "Luxury Apartment",
+    description: "A beautiful apartment with modern amenities.",
+    image: "https://via.placeholder.com/150",
+    price: 1000000,
+    bedrooms: 3,
+    bathrooms: 2,
+    area: 1200,
+    propertyType: "Apartment",
+    latitude: 37.7749,
+    longitude: -122.4194,
+  },
+  {
+    id: 2,
+    name: "Cozy Cottage",
+    description: "A quaint cottage in the countryside.",
+    image: "https://via.placeholder.com/150",
+    price: 500000,
+    bedrooms: 2,
+    bathrooms: 1,
+    area: 800,
+    propertyType: "Cottage",
+    latitude: 37.7849,
+    longitude: -122.4094,
+  },
+];
+
 export default function Dashboard() {
-  const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
+  const [properties, setProperties] = useState<Property[]>(initialProperties);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(
+    null
+  );
+  const [sortOption, setSortOption] = useState<string>("price");
 
-  // Sample property data
-  const properties: Property[] = [
-    {
-      id: "1",
-      name: "Luxury Villa",
-      description: "Beautiful 4-bedroom villa with pool",
-      image: "/api/placeholder/300/200",
-      latitude: 51.505,
-      longitude: -0.09,
-      price: "$1,200,000",
-    },
-    {
-      id: "2",
-      name: "City Apartment",
-      description: "Modern 2-bedroom apartment in downtown",
-      image: "/api/placeholder/300/200",
-      latitude: 51.51,
-      longitude: -0.1,
-      price: "$750,000",
-    },
-    {
-      id: "3",
-      name: "Suburban House",
-      description: "Spacious 3-bedroom family home",
-      image: "/api/placeholder/300/200",
-      latitude: 51.515,
-      longitude: -0.08,
-      price: "$950,000",
-    },
-  ];
+  const handleSortChange = (option: string) => {
+    setSortOption(option);
+    setProperties((prevProperties) => {
+      const sortedProperties = [...prevProperties];
+      switch (option) {
+        case "price":
+          return sortedProperties.sort((a, b) => a.price - b.price);
+        case "area":
+          return sortedProperties.sort((a, b) => a.area - b.area);
+        case "bedrooms":
+          return sortedProperties.sort((a, b) => a.bedrooms - b.bedrooms);
+        default:
+          return sortedProperties;
+      }
+    });
+  };
 
-  const handlePropertySelect = (propertyId: string) => {
-    setSelectedProperty(propertyId);
+  const handlePropertyChange = (id: number, updatedData: Partial<Property>) => {
+    setProperties((prevProperties) =>
+      prevProperties.map((property) =>
+        property.id === id ? { ...property, ...updatedData } : property
+      )
+    );
   };
 
   return (
@@ -95,8 +122,11 @@ export default function Dashboard() {
       >
         <PropertySidebar
           properties={properties}
-          selectedProperty={selectedProperty}
-          onPropertySelect={handlePropertySelect}
+          selectedPropertyId={selectedPropertyId}
+          setSelectedPropertyId={setSelectedPropertyId}
+          handlePropertyChange={handlePropertyChange}
+          sortOption={sortOption}
+          handleSortChange={handleSortChange}
         />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 border-b">
@@ -162,8 +192,8 @@ export default function Dashboard() {
       </SidebarProvider>
       <MapView
         properties={properties}
-        selectedProperty={selectedProperty}
-        onPropertySelect={handlePropertySelect}
+        selectedPropertyId={selectedPropertyId}
+        setSelectedPropertyId={setSelectedPropertyId}
       />
     </div>
   );

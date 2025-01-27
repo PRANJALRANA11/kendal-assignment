@@ -13,17 +13,17 @@ interface Property {
   price: number;
   bedrooms: number;
   bathrooms: number;
-  area: number;
   propertyType: string;
+  area: number;
 }
 
 interface MapComponentProps {
   properties: Property[];
-  selectedProperty: string | null;
-  onPropertySelect: (propertyId: string) => void;
+  selectedPropertyId: number | null;
+  setSelectedPropertyId: (id: number | null) => void;
 }
 
-// Define marker icons
+// Define custom marker icon
 const customIcon = new L.Icon({
   iconUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
@@ -31,53 +31,51 @@ const customIcon = new L.Icon({
   iconAnchor: [12, 41],
 });
 
-interface MapComponentProps {
-  properties: Property[];
-  selectedProperty: string | null;
-  onPropertySelect: (propertyId: string) => void;
-}
-
 // Helper component to handle map interactions
 const MapController: React.FC<{
-  selectedProperty: string | null;
+  selectedPropertyId: number | null;
   properties: Property[];
-}> = ({ selectedProperty, properties }) => {
+}> = ({ selectedPropertyId, properties }) => {
   const map = useMap();
 
   useEffect(() => {
-    if (selectedProperty) {
-      const property = properties.find((p) => p.id === selectedProperty);
+    if (selectedPropertyId) {
+      const property = properties.find((p) => p.id === selectedPropertyId);
       if (property) {
         map.setView([property.latitude, property.longitude], 16, {
           animate: true,
         });
       }
     }
-  }, [selectedProperty, properties, map]);
+  }, [selectedPropertyId, properties, map]);
 
   return null;
 };
 
 const MapView: React.FC<MapComponentProps> = ({
   properties,
-  selectedProperty,
-  onPropertySelect,
+  selectedPropertyId,
+  setSelectedPropertyId,
 }) => {
   const mapRef = useRef<L.Map | null>(null);
   const markerRefs = useRef<Record<number, L.Marker>>(Object.create(null));
 
   useEffect(() => {
-    if (selectedProperty !== null && mapRef.current) {
-      const property = properties.find((p) => p.id === selectedProperty);
-      if (property) {
-        mapRef.current.setView([property.latitude, property.longitude], 15); // Focus map on marker
-        const marker = markerRefs.current[selectedProperty];
+    if (selectedPropertyId !== null) {
+      const property = properties.find((p) => p.id === selectedPropertyId);
+      if (property && mapRef.current) {
+        mapRef.current.setView([property.latitude, property.longitude], 15, {
+          animate: true,
+        });
+
+        // Open popup for the selected marker
+        const marker = markerRefs.current[selectedPropertyId];
         if (marker) {
-          marker.openPopup(); // Open the popup
+          marker.openPopup();
         }
       }
     }
-  }, [selectedProperty]);
+  }, [selectedPropertyId, properties]);
 
   return (
     <div style={{ flex: 1 }}>
@@ -94,20 +92,20 @@ const MapView: React.FC<MapComponentProps> = ({
         />
 
         <MapController
-          selectedProperty={selectedProperty}
+          selectedPropertyId={selectedPropertyId}
           properties={properties}
         />
 
         {/* Markers */}
-        {properties.map((property, index) => (
+        {properties.map((property) => (
           <Marker
-            key={`${property.id}-${index}`} // Combines id and index for uniqueness
+            key={property.id} // Use unique property ID as key
             position={[property.latitude, property.longitude]}
             ref={(marker) => {
               if (marker) markerRefs.current[property.id] = marker;
             }}
             eventHandlers={{
-              click: () => onPropertySelect(property.id),
+              click: () => setSelectedPropertyId(property.id),
             }}
             icon={customIcon}
           >

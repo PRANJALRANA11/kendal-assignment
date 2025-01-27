@@ -20,37 +20,52 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
+import { Button } from "./ui/button";
 
 interface Property {
-  id: string;
+  id: number;
   name: string;
   description: string;
   image: string;
   latitude: number;
   longitude: number;
-  price: string;
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  propertyType: string;
+  area: number;
 }
 
-interface PropertySidebarProps extends React.ComponentProps<typeof Sidebar> {
+interface PropertySidebarProps {
   properties: Property[];
-  selectedProperty: string | null;
-  onPropertySelect: (propertyId: string) => void;
+  selectedPropertyId: number | null;
+  setSelectedPropertyId: (id: number | null) => void;
+  handlePropertyChange: (id: number, updatedData: Partial<Property>) => void;
+  sortOption: string;
+  handleSortChange: (option: string) => void;
 }
 
 export function PropertySidebar({
   properties,
-  selectedProperty,
-  onPropertySelect,
+  selectedPropertyId,
+  setSelectedPropertyId,
+  handlePropertyChange,
+  sortOption,
+  handleSortChange,
   ...props
 }: PropertySidebarProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredProperties = properties.filter(
-    (property) =>
-      property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.price.toLowerCase().includes(searchTerm.toLowerCase())
+  const selectedProperty = properties.find(
+    (property) => property.id === selectedPropertyId
   );
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    field: keyof Property
+  ) => {
+    if (selectedPropertyId !== null) {
+      handlePropertyChange(selectedPropertyId, { [field]: e.target.value });
+    }
+  };
 
   return (
     <Sidebar {...props}>
@@ -61,16 +76,27 @@ export function PropertySidebar({
               <div className="flex items-center w-full gap-2">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <DropdownMenu>
-                    <DropdownMenuTrigger>
-                      <GalleryVerticalEnd className="size-4" />
+                    <DropdownMenuTrigger asChild>
+                      <GalleryVerticalEnd className="w-4 h-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuLabel>Filter Properties</DropdownMenuLabel>
+                      <DropdownMenuLabel>Sort Options</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>Price: Low to High</DropdownMenuItem>
-                      <DropdownMenuItem>Price: High to Low</DropdownMenuItem>
-                      <DropdownMenuItem>Latest</DropdownMenuItem>
-                      <DropdownMenuItem>Most Popular</DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleSortChange("price")}
+                      >
+                        Price
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleSortChange("area")}
+                      >
+                        Area
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleSortChange("bedrooms")}
+                      >
+                        Bedrooms
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -79,7 +105,7 @@ export function PropertySidebar({
                     Property Listings
                   </span>
                   <span className="text-sm text-gray-500 hidden md:block">
-                    {filteredProperties.length} properties found
+                    {properties.length} properties found
                   </span>
                 </div>
               </div>
@@ -89,24 +115,19 @@ export function PropertySidebar({
         <div className="px-4 py-2 w-full">
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-            <Input
-              placeholder="Search properties..."
-              className="pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            <Input placeholder="Search properties..." className="pl-8" />
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <div className="grid gap-4 p-4">
-            {filteredProperties.map((property) => (
+            {properties.map((property) => (
               <div
                 key={property.id}
-                onClick={() => onPropertySelect(property.id)}
+                onClick={() => setSelectedPropertyId(property.id)}
                 className={`flex flex-col rounded-lg border bg-white shadow-md overflow-hidden cursor-pointer transition-all duration-200 ${
-                  selectedProperty === property.id
+                  selectedPropertyId === property.id
                     ? "ring-2 ring-primary border-primary"
                     : "hover:shadow-lg"
                 }`}
