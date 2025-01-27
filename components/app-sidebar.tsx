@@ -19,8 +19,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
-import { Button } from "./ui/button";
 
 interface Property {
   id: number;
@@ -43,6 +41,8 @@ interface PropertySidebarProps {
   handlePropertyChange: (id: number, updatedData: Partial<Property>) => void;
   sortOption: string;
   handleSortChange: (option: string) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
 export function PropertySidebar({
@@ -52,8 +52,29 @@ export function PropertySidebar({
   handlePropertyChange,
   sortOption,
   handleSortChange,
+  setSearchQuery,
+  searchQuery,
   ...props
 }: PropertySidebarProps) {
+  const filteredProperties = React.useMemo(() => {
+    return properties.filter((property) => {
+      const searchTerm = searchQuery.toLowerCase();
+      return (
+        property.name.toLowerCase().includes(searchTerm) ||
+        property.description.toLowerCase().includes(searchTerm) ||
+        property.propertyType.toLowerCase().includes(searchTerm) ||
+        property.price.toString().includes(searchTerm) ||
+        property.bedrooms.toString().includes(searchTerm) ||
+        property.bathrooms.toString().includes(searchTerm) ||
+        property.area.toString().includes(searchTerm)
+      );
+    });
+  }, [properties, searchQuery]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
   const selectedProperty = properties.find(
     (property) => property.id === selectedPropertyId
   );
@@ -105,7 +126,7 @@ export function PropertySidebar({
                     Property Listings
                   </span>
                   <span className="text-sm text-gray-500 hidden md:block">
-                    {properties.length} properties found
+                    {filteredProperties.length} properties found
                   </span>
                 </div>
               </div>
@@ -115,14 +136,19 @@ export function PropertySidebar({
         <div className="px-4 py-2 w-full">
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-            <Input placeholder="Search properties..." className="pl-8" />
+            <Input
+              placeholder="Search properties..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <div className="grid gap-4 p-4">
-            {properties.map((property) => (
+            {filteredProperties.map((property) => (
               <div
                 key={property.id}
                 onClick={() => setSelectedPropertyId(property.id)}
@@ -140,12 +166,17 @@ export function PropertySidebar({
                 <div className="p-4">
                   <h3 className="font-semibold text-lg">{property.name}</h3>
                   <p className="font-medium text-primary mt-1">
-                    {property.price}
+                    ${property.price.toLocaleString()}
                   </p>
                   <p className="text-sm text-gray-600 mt-2">
                     {property.description}
                   </p>
-                  <div className="flex items-center gap-2 mt-3">
+                  <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
+                    <span>{property.bedrooms} beds</span>
+                    <span>{property.bathrooms} baths</span>
+                    <span>{property.area} sq ft</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
                     <span className="text-xs text-gray-500">
                       Lat: {property.latitude.toFixed(4)}
                     </span>

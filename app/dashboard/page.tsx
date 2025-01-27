@@ -85,6 +85,7 @@ export default function Dashboard() {
   const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(
     null
   );
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<string>("price");
 
   const handleSortChange = (option: string) => {
@@ -127,6 +128,8 @@ export default function Dashboard() {
           handlePropertyChange={handlePropertyChange}
           sortOption={sortOption}
           handleSortChange={handleSortChange}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
         />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 border-b">
@@ -194,6 +197,7 @@ export default function Dashboard() {
         properties={properties}
         selectedPropertyId={selectedPropertyId}
         setSelectedPropertyId={setSelectedPropertyId}
+        searchQuery={searchQuery}
       />
     </div>
   );
