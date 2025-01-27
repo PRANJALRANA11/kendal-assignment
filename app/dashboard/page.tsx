@@ -1,6 +1,11 @@
+"use client";
 import Image from "next/image";
-import Navheader from "@/components/ui/navigation";
-import { AppSidebar } from "@/components/app-sidebar";
+import dynamic from "next/dynamic";
+import L from "leaflet";
+import React, { useState } from "react";
+// Dynamically load the map component without SSR
+const MapView = dynamic(() => import("@/components/ui/map"), { ssr: false });
+import { PropertySidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -32,17 +37,67 @@ import {
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+interface Property {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  latitude: number;
+  longitude: number;
+  price: string;
+}
+
 export default function Dashboard() {
+  const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
+
+  // Sample property data
+  const properties: Property[] = [
+    {
+      id: "1",
+      name: "Luxury Villa",
+      description: "Beautiful 4-bedroom villa with pool",
+      image: "/api/placeholder/300/200",
+      latitude: 51.505,
+      longitude: -0.09,
+      price: "$1,200,000",
+    },
+    {
+      id: "2",
+      name: "City Apartment",
+      description: "Modern 2-bedroom apartment in downtown",
+      image: "/api/placeholder/300/200",
+      latitude: 51.51,
+      longitude: -0.1,
+      price: "$750,000",
+    },
+    {
+      id: "3",
+      name: "Suburban House",
+      description: "Spacious 3-bedroom family home",
+      image: "/api/placeholder/300/200",
+      latitude: 51.515,
+      longitude: -0.08,
+      price: "$950,000",
+    },
+  ];
+
+  const handlePropertySelect = (propertyId: string) => {
+    setSelectedProperty(propertyId);
+  };
+
   return (
     <div className="block">
-      {/* <Navheader /> */}
       <SidebarProvider
         style={{
           "--sidebar-width": "40rem",
           "--sidebar-width-mobile": "20rem",
         }}
       >
-        <AppSidebar />
+        <PropertySidebar
+          properties={properties}
+          selectedProperty={selectedProperty}
+          onPropertySelect={handlePropertySelect}
+        />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 border-b">
             <div className="flex items-center gap-2 px-3">
@@ -63,13 +118,13 @@ export default function Dashboard() {
             <div className="ml-auto flex items-center space-x-4 px-4 md:px-6">
               <Dialog>
                 <DialogTrigger>
-                  <Button
+                  {/* <Button
                     variant="default"
                     className="h-8 bg-black text-white "
-                  >
-                    Enter Details
-                    <Pen className="ml-2 h-4 w-4" />
-                  </Button>
+                  > */}
+                  {/* Enter Details */}
+                  <Pen className="ml-2 h-4 w-4" />
+                  {/* </Button> */}
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -105,6 +160,11 @@ export default function Dashboard() {
           </div>
         </SidebarInset>
       </SidebarProvider>
+      <MapView
+        properties={properties}
+        selectedProperty={selectedProperty}
+        onPropertySelect={handlePropertySelect}
+      />
     </div>
   );
 }

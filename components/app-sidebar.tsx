@@ -1,6 +1,5 @@
 import * as React from "react";
-import { GalleryVerticalEnd } from "lucide-react";
-
+import { GalleryVerticalEnd, Search } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -11,61 +10,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Input } from "./ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-// Updated data for properties
-const data = {
-  properties: [
-    {
-      title: "Modern Apartment",
-      imageUrl: "https://via.placeholder.com/150",
-      price: "$1200/month",
-      location: "New York, NY",
-      description:
-        "A beautiful modern apartment located in the heart of the city.",
-    },
-    {
-      title: "Cozy Cottage",
-      imageUrl: "https://via.placeholder.com/150",
-      price: "$800/month",
-      location: "Austin, TX",
-      description: "A quaint and cozy cottage surrounded by nature.",
-    },
-    {
-      title: "Luxury Villa",
-      imageUrl: "https://via.placeholder.com/150",
-      price: "$5000/month",
-      location: "Los Angeles, CA",
-      description:
-        "An extravagant villa with stunning views and top-notch amenities.",
-    },
-    {
-      title: "Luxury Villa",
-      imageUrl: "https://via.placeholder.com/150",
-      price: "$5000/month",
-      location: "Los Angeles, CA",
-      description:
-        "An extravagant villa with stunning views and top-notch amenities.",
-    },
-    {
-      title: "Luxury Villa",
-      imageUrl: "https://via.placeholder.com/150",
-      price: "$5000/month",
-      location: "Los Angeles, CA",
-      description:
-        "An extravagant villa with stunning views and top-notch amenities.",
-    },
-    {
-      title: "Luxury Villa",
-      imageUrl: "https://via.placeholder.com/150",
-      price: "$5000/month",
-      location: "Los Angeles, CA",
-      description:
-        "An extravagant villa with stunning views and top-notch amenities.",
-    },
-  ],
-};
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,29 +19,58 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "./ui/button";
+import { useState } from "react";
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface Property {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  latitude: number;
+  longitude: number;
+  price: string;
+}
+
+interface PropertySidebarProps extends React.ComponentProps<typeof Sidebar> {
+  properties: Property[];
+  selectedProperty: string | null;
+  onPropertySelect: (propertyId: string) => void;
+}
+
+export function PropertySidebar({
+  properties,
+  selectedProperty,
+  onPropertySelect,
+  ...props
+}: PropertySidebarProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredProperties = properties.filter(
+    (property) =>
+      property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      property.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      property.price.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <div className="flex items-center w-full gap-2">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <DropdownMenu>
                     <DropdownMenuTrigger>
-                      {" "}
                       <GalleryVerticalEnd className="size-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                      <DropdownMenuLabel>Filter Properties</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>Profile</DropdownMenuItem>
-                      <DropdownMenuItem>Billing</DropdownMenuItem>
-                      <DropdownMenuItem>Team</DropdownMenuItem>
-                      <DropdownMenuItem>Subscription</DropdownMenuItem>
+                      <DropdownMenuItem>Price: Low to High</DropdownMenuItem>
+                      <DropdownMenuItem>Price: High to Low</DropdownMenuItem>
+                      <DropdownMenuItem>Latest</DropdownMenuItem>
+                      <DropdownMenuItem>Most Popular</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -104,41 +78,60 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <span className="font-semibold hidden md:block">
                     Property Listings
                   </span>
-                  <span className="hidden md:block">v1.0.0</span>
+                  <span className="text-sm text-gray-500 hidden md:block">
+                    {filteredProperties.length} properties found
+                  </span>
                 </div>
-                <Input placeholder="search" className="md:hidden" />
-                {/* <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar> */}
-              </a>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <div className="ml-auto mr-10"></div>
+        <div className="px-4 py-2 w-full">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="Search properties..."
+              className="pl-8"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <div className="grid gap-4 md:grid-cols-2 p-4">
-            {data.properties.map((property) => (
+          <div className="grid gap-4 p-4">
+            {filteredProperties.map((property) => (
               <div
-                key={property.title}
-                className="flex flex-col rounded-lg border bg-white shadow-md overflow-hidden"
+                key={property.id}
+                onClick={() => onPropertySelect(property.id)}
+                className={`flex flex-col rounded-lg border bg-white shadow-md overflow-hidden cursor-pointer transition-all duration-200 ${
+                  selectedProperty === property.id
+                    ? "ring-2 ring-primary border-primary"
+                    : "hover:shadow-lg"
+                }`}
               >
                 <img
-                  src={property.imageUrl}
-                  alt={property.title}
-                  className="h-32 w-full object-cover"
+                  src={property.image}
+                  alt={property.name}
+                  className="h-48 w-full object-cover"
                 />
                 <div className="p-4">
-                  <h3 className="font-semibold text-lg">{property.title}</h3>
-                  <p className="text-sm text-gray-500">{property.location}</p>
+                  <h3 className="font-semibold text-lg">{property.name}</h3>
                   <p className="font-medium text-primary mt-1">
                     {property.price}
                   </p>
                   <p className="text-sm text-gray-600 mt-2">
                     {property.description}
                   </p>
+                  <div className="flex items-center gap-2 mt-3">
+                    <span className="text-xs text-gray-500">
+                      Lat: {property.latitude.toFixed(4)}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Long: {property.longitude.toFixed(4)}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
