@@ -1,25 +1,3 @@
-import * as React from "react";
-import { GalleryVerticalEnd, Search } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-} from "@/components/ui/sidebar";
-import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
 interface Property {
   id: number;
   name: string;
@@ -33,6 +11,15 @@ interface Property {
   propertyType: string;
   area: number;
 }
+type Filters = {
+  priceRange: [number, number];
+  bedrooms: number | null;
+  bathrooms: number | null;
+  minArea: number | null;
+  propertyType: string | null;
+  title: string;
+  description: string;
+};
 
 interface PropertySidebarProps {
   properties: Property[];
@@ -43,7 +30,35 @@ interface PropertySidebarProps {
   handleSortChange: (option: string) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  filters: Filters;
+  onFiltersChange: (filters: Filters) => void;
 }
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import * as React from "react";
+import { GalleryVerticalEnd, Search } from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import { Input } from "@/components/ui/input";
+import { FilterPanel } from "./ui/filter-panel";
+
+// ... (keep existing interfaces)
 
 export function PropertySidebar({
   properties,
@@ -52,41 +67,57 @@ export function PropertySidebar({
   handlePropertyChange,
   sortOption,
   handleSortChange,
-  setSearchQuery,
   searchQuery,
+  setSearchQuery,
+  filters,
+  onFiltersChange,
   ...props
 }: PropertySidebarProps) {
   const filteredProperties = React.useMemo(() => {
     return properties.filter((property) => {
+      // Basic search filter
       const searchTerm = searchQuery.toLowerCase();
-      return (
+      const matchesSearch =
         property.name.toLowerCase().includes(searchTerm) ||
         property.description.toLowerCase().includes(searchTerm) ||
         property.propertyType.toLowerCase().includes(searchTerm) ||
         property.price.toString().includes(searchTerm) ||
         property.bedrooms.toString().includes(searchTerm) ||
         property.bathrooms.toString().includes(searchTerm) ||
-        property.area.toString().includes(searchTerm)
+        property.area.toString().includes(searchTerm);
+
+      // Advanced filters
+      const matchesPrice =
+        property.price >= filters.priceRange[0] &&
+        property.price <= filters.priceRange[1];
+      const matchesBedrooms =
+        !filters.bedrooms || property.bedrooms >= filters.bedrooms;
+      const matchesBathrooms =
+        !filters.bathrooms || property.bathrooms >= filters.bathrooms;
+      const matchesArea = !filters.minArea || property.area >= filters.minArea;
+      const matchesType =
+        !filters.propertyType || property.propertyType === filters.propertyType;
+      const matchesTitle =
+        !filters.title ||
+        property.name.toLowerCase().includes(filters.title.toLowerCase());
+      const matchesDescription =
+        !filters.description ||
+        property.description
+          .toLowerCase()
+          .includes(filters.description.toLowerCase());
+
+      return (
+        matchesSearch &&
+        matchesPrice &&
+        matchesBedrooms &&
+        matchesBathrooms &&
+        matchesArea &&
+        matchesType &&
+        matchesTitle &&
+        matchesDescription
       );
     });
-  }, [properties, searchQuery]);
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const selectedProperty = properties.find(
-    (property) => property.id === selectedPropertyId
-  );
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    field: keyof Property
-  ) => {
-    if (selectedPropertyId !== null) {
-      handlePropertyChange(selectedPropertyId, { [field]: e.target.value });
-    }
-  };
+  }, [properties, searchQuery, filters]);
 
   return (
     <Sidebar {...props}>
@@ -134,13 +165,19 @@ export function PropertySidebar({
           </SidebarMenuItem>
         </SidebarMenu>
         <div className="px-4 py-2 w-full">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-            <Input
-              placeholder="Search properties..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={handleSearchChange}
+          <div className="flex gap-2 items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search properties..."
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <FilterPanel
+              properties={properties}
+              onFiltersChange={onFiltersChange}
             />
           </div>
         </div>
@@ -168,22 +205,15 @@ export function PropertySidebar({
                   <p className="font-medium text-primary mt-1">
                     ${property.price.toLocaleString()}
                   </p>
-                  <p className="text-sm text-gray-600 mt-2">
-                    {property.description}
-                  </p>
-                  <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
+                  <div className="flex gap-3 text-sm text-gray-600 mt-2">
                     <span>{property.bedrooms} beds</span>
                     <span>{property.bathrooms} baths</span>
                     <span>{property.area} sq ft</span>
+                    <span>{property.propertyType}</span>
                   </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs text-gray-500">
-                      Lat: {property.latitude.toFixed(4)}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      Long: {property.longitude.toFixed(4)}
-                    </span>
-                  </div>
+                  <p className="text-sm text-gray-600 mt-2">
+                    {property.description}
+                  </p>
                 </div>
               </div>
             ))}

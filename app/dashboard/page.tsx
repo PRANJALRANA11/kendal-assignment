@@ -87,6 +87,15 @@ export default function Dashboard() {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<string>("price");
+  const [filters, setFilters] = React.useState({
+    priceRange: [0, Math.max(...properties.map((p) => p.price))],
+    bedrooms: null,
+    bathrooms: null,
+    minArea: null,
+    propertyType: null,
+    title: "",
+    description: "",
+  });
 
   const handleSortChange = (option: string) => {
     setSortOption(option);
@@ -130,6 +139,8 @@ export default function Dashboard() {
           handleSortChange={handleSortChange}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
+          filters={filters}
+          onFiltersChange={setFilters}
         />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 border-b">
@@ -198,6 +209,8 @@ export default function Dashboard() {
         selectedPropertyId={selectedPropertyId}
         setSelectedPropertyId={setSelectedPropertyId}
         searchQuery={searchQuery}
+        filters={filters}
+        onFiltersChange={setFilters}
       />
     </div>
   );

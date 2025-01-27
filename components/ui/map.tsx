@@ -17,11 +17,22 @@ interface Property {
   area: number;
 }
 
+interface PropertyFilters {
+  priceRange: [number, number];
+  bedrooms: number | null;
+  bathrooms: number | null;
+  minArea: number | null;
+  propertyType: string | null;
+  title: string;
+  description: string;
+}
+
 interface MapComponentProps {
   properties: Property[];
   selectedPropertyId: number | null;
   setSelectedPropertyId: (id: number | null) => void;
   searchQuery: string;
+  filters: PropertyFilters;
 }
 
 const customIcon = new L.Icon({
@@ -48,7 +59,6 @@ const MapController: React.FC<{
   useEffect(() => {
     if (selectedPropertyId) {
       const property = properties.find((p) => p.id === selectedPropertyId);
-      // Only zoom to selected property if it's in the filtered results
       if (
         property &&
         filteredProperties.some((fp) => fp.id === selectedPropertyId)
@@ -57,7 +67,6 @@ const MapController: React.FC<{
           animate: true,
         });
       } else if (filteredProperties.length > 0) {
-        // If selected property is not in filtered results, show all filtered properties
         const bounds = L.latLngBounds(
           filteredProperties.map((p) => [p.latitude, p.longitude])
         );
@@ -79,26 +88,57 @@ const MapView: React.FC<MapComponentProps> = ({
   selectedPropertyId,
   setSelectedPropertyId,
   searchQuery,
+  filters,
 }) => {
   const mapRef = useRef<L.Map | null>(null);
   const markerRefs = useRef<Record<number, L.Marker>>(Object.create(null));
 
-  // Filter properties based on search query
+  // Filter properties based on search query and filters
   const filteredProperties = useMemo(() => {
-    if (!searchQuery) return properties;
-
-    const searchTerm = searchQuery.toLowerCase();
-    return properties.filter(
-      (property) =>
+    return properties.filter((property) => {
+      // Basic search filter
+      const searchTerm = searchQuery.toLowerCase();
+      const matchesSearch =
         property.name.toLowerCase().includes(searchTerm) ||
         property.description.toLowerCase().includes(searchTerm) ||
         property.propertyType.toLowerCase().includes(searchTerm) ||
         property.price.toString().includes(searchTerm) ||
         property.bedrooms.toString().includes(searchTerm) ||
         property.bathrooms.toString().includes(searchTerm) ||
-        property.area.toString().includes(searchTerm)
-    );
-  }, [properties, searchQuery]);
+        property.area.toString().includes(searchTerm);
+
+      // Advanced filters
+      const matchesPrice =
+        property.price >= filters.priceRange[0] &&
+        property.price <= filters.priceRange[1];
+      const matchesBedrooms =
+        !filters.bedrooms || property.bedrooms >= filters.bedrooms;
+      const matchesBathrooms =
+        !filters.bathrooms || property.bathrooms >= filters.bathrooms;
+      const matchesArea = !filters.minArea || property.area >= filters.minArea;
+      const matchesType =
+        !filters.propertyType || property.propertyType === filters.propertyType;
+      const matchesTitle =
+        !filters.title ||
+        property.name.toLowerCase().includes(filters.title.toLowerCase());
+      const matchesDescription =
+        !filters.description ||
+        property.description
+          .toLowerCase()
+          .includes(filters.description.toLowerCase());
+
+      return (
+        matchesSearch &&
+        matchesPrice &&
+        matchesBedrooms &&
+        matchesBathrooms &&
+        matchesArea &&
+        matchesType &&
+        matchesTitle &&
+        matchesDescription
+      );
+    });
+  }, [properties, searchQuery, filters]);
 
   // Deselect property if it's not in filtered results
   useEffect(() => {
@@ -109,26 +149,6 @@ const MapView: React.FC<MapComponentProps> = ({
       setSelectedPropertyId(null);
     }
   }, [filteredProperties, selectedPropertyId, setSelectedPropertyId]);
-
-  useEffect(() => {
-    if (selectedPropertyId !== null) {
-      const property = properties.find((p) => p.id === selectedPropertyId);
-      if (
-        property &&
-        mapRef.current &&
-        filteredProperties.some((fp) => fp.id === selectedPropertyId)
-      ) {
-        mapRef.current.setView([property.latitude, property.longitude], 15, {
-          animate: true,
-        });
-
-        const marker = markerRefs.current[selectedPropertyId];
-        if (marker) {
-          marker.openPopup();
-        }
-      }
-    }
-  }, [selectedPropertyId, properties, filteredProperties]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
