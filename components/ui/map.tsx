@@ -1,7 +1,14 @@
-"use client";
-import React, { useEffect, useRef, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import React, { useEffect, useRef, useMemo, useState } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+  FeatureGroup,
+} from "react-leaflet";
 import L from "leaflet";
+import { EditControl } from "react-leaflet-draw";
 
 interface Property {
   id: number;
@@ -72,11 +79,6 @@ const MapController: React.FC<{
         );
         map.fitBounds(bounds, { padding: [50, 50] });
       }
-    } else if (filteredProperties.length > 0) {
-      const bounds = L.latLngBounds(
-        filteredProperties.map((p) => [p.latitude, p.longitude])
-      );
-      map.fitBounds(bounds, { padding: [50, 50] });
     }
   }, [selectedPropertyId, properties, filteredProperties, map]);
 
@@ -92,6 +94,7 @@ const MapView: React.FC<MapComponentProps> = ({
 }) => {
   const mapRef = useRef<L.Map | null>(null);
   const markerRefs = useRef<Record<number, L.Marker>>(Object.create(null));
+  const [drawnPolygon, setDrawnPolygon] = useState<L.Polygon | null>(null);
 
   // Filter properties based on search query and filters
   const filteredProperties = useMemo(() => {
@@ -127,6 +130,13 @@ const MapView: React.FC<MapComponentProps> = ({
           .toLowerCase()
           .includes(filters.description.toLowerCase());
 
+      // Check if property is inside polygon (if one exists)
+      const matchesPolygon = drawnPolygon
+        ? drawnPolygon
+            .getBounds()
+            .contains(L.latLng(property.latitude, property.longitude))
+        : true;
+
       return (
         matchesSearch &&
         matchesPrice &&
@@ -135,20 +145,29 @@ const MapView: React.FC<MapComponentProps> = ({
         matchesArea &&
         matchesType &&
         matchesTitle &&
-        matchesDescription
+        matchesDescription &&
+        matchesPolygon
       );
     });
-  }, [properties, searchQuery, filters]);
+  }, [properties, searchQuery, filters, drawnPolygon]);
 
-  // Deselect property if it's not in filtered results
-  useEffect(() => {
-    if (
-      selectedPropertyId &&
-      !filteredProperties.some((p) => p.id === selectedPropertyId)
-    ) {
-      setSelectedPropertyId(null);
+  const handleDrawCreated = (e: any) => {
+    const layer = e.layer;
+
+    // Remove previous polygon if it exists
+    if (drawnPolygon) {
+      drawnPolygon.remove();
     }
-  }, [filteredProperties, selectedPropertyId, setSelectedPropertyId]);
+
+    // Store the new polygon
+    if (layer instanceof L.Polygon) {
+      setDrawnPolygon(layer);
+    }
+  };
+
+  const handleDrawDeleted = () => {
+    setDrawnPolygon(null);
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -165,56 +184,70 @@ const MapView: React.FC<MapComponentProps> = ({
         className="h-full w-full"
         ref={mapRef}
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-
-        <MapController
-          selectedPropertyId={selectedPropertyId}
-          properties={properties}
-          filteredProperties={filteredProperties}
-        />
-
-        {filteredProperties.map((property) => (
-          <Marker
-            key={property.id}
-            position={[property.latitude, property.longitude]}
-            ref={(marker) => {
-              if (marker) markerRefs.current[property.id] = marker;
+        <FeatureGroup>
+          <EditControl
+            position="topright"
+            onCreated={handleDrawCreated}
+            onDeleted={handleDrawDeleted}
+            draw={{
+              rectangle: false,
+              circle: false,
+              circlemarker: false,
+              marker: false,
+              polyline: false,
             }}
-            eventHandlers={{
-              click: () => setSelectedPropertyId(property.id),
-            }}
-            icon={
-              selectedPropertyId === property.id ? selectedIcon : customIcon
-            }
-          >
-            <Popup className="property-popup">
-              <div className="max-w-xs">
-                <img
-                  src={property.image}
-                  alt={property.name}
-                  className="w-full h-32 object-cover rounded-t-lg"
-                />
-                <div className="p-3">
-                  <h3 className="font-semibold text-lg">{property.name}</h3>
-                  <p className="text-primary font-medium">
-                    {formatPrice(property.price)}
-                  </p>
-                  <div className="flex gap-3 text-sm text-gray-600 mt-2">
-                    <span>{property.bedrooms} beds</span>
-                    <span>{property.bathrooms} baths</span>
-                    <span>{property.area} sq ft</span>
+          />
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+
+          <MapController
+            selectedPropertyId={selectedPropertyId}
+            properties={properties}
+            filteredProperties={filteredProperties}
+          />
+
+          {filteredProperties.map((property) => (
+            <Marker
+              key={property.id}
+              position={[property.latitude, property.longitude]}
+              ref={(marker) => {
+                if (marker) markerRefs.current[property.id] = marker;
+              }}
+              eventHandlers={{
+                click: () => setSelectedPropertyId(property.id),
+              }}
+              icon={
+                selectedPropertyId === property.id ? selectedIcon : customIcon
+              }
+            >
+              <Popup className="property-popup">
+                <div className="max-w-xs">
+                  <img
+                    src={property.image}
+                    alt={property.name}
+                    className="w-full h-32 object-cover rounded-t-lg"
+                  />
+                  <div className="p-3">
+                    <h3 className="font-semibold text-lg">{property.name}</h3>
+                    <p className="text-primary font-medium">
+                      {formatPrice(property.price)}
+                    </p>
+                    <div className="flex gap-3 text-sm text-gray-600 mt-2">
+                      <span>{property.bedrooms} beds</span>
+                      <span>{property.bathrooms} baths</span>
+                      <span>{property.area} sq ft</span>
+                    </div>
+                    <p className="text-sm mt-2 text-gray-600">
+                      {property.description}
+                    </p>
                   </div>
-                  <p className="text-sm mt-2 text-gray-600">
-                    {property.description}
-                  </p>
                 </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          ))}
+        </FeatureGroup>
       </MapContainer>
     </div>
   );
