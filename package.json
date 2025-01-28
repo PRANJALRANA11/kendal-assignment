@@ -28,6 +28,8 @@
     "clsx": "^2.1.1",
     "cobe": "^0.6.3",
     "dotted-map": "^2.2.3",
+    "firebase": "^11.2.0",
+    "formik": "^2.4.6",
     "framer-motion": "^12.0.5",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.474.0",
@@ -38,7 +40,8 @@
     "react-leaflet": "^5.0.0",
     "react-leaflet-draw": "^0.20.4",
     "tailwind-merge": "^2.6.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.16",
