@@ -150,7 +150,7 @@ const MapView: React.FC<MapComponentProps> = ({
     <MapContainer
       center={[37.7749, -122.4194]}
       zoom={13}
-      className="h-full w-full z-0"
+      className="h-full w-[100vw] z-0"
       ref={mapRef}
     >
       <FeatureGroup>
