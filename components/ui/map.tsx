@@ -11,7 +11,7 @@ import L from "leaflet";
 import { EditControl } from "react-leaflet-draw";
 
 interface Property {
-  id: number;
+  id: string;
   name: string;
   description: string;
   image: string;

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { db, storage } from "@/lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ID } from "node-appwrite";
+import { databases, storage } from "@/lib/appwrite";
 import {
   propertyBackendSchema,
   propertyFormSchema,
@@ -38,11 +37,20 @@ export async function POST(request: Request) {
       image: imageFile,
     });
 
-    // Upload image to Firebase Storage
-    const imageRef = ref(storage, `properties/${Date.now()}_${imageFile.name}`);
-    const imageBuffer = await imageFile.arrayBuffer();
-    await uploadBytes(imageRef, imageBuffer);
-    const imageUrl = await getDownloadURL(imageRef);
+    // Upload image to Appwrite Storage
+    const bucketId = process.env.NEXT_PUBLIC_APPWRITE_BUCKET; // Replace with your Appwrite storage bucket ID
+
+    const fileId = ID.unique(); // Generate a unique file ID
+
+    console.log("Starting file upload...");
+    console.log("Bucket ID:", bucketId);
+    console.log("File ID:", fileId);
+    console.log("Image File:", imageFile);
+
+    const fileResponse = await storage.createFile(bucketId, fileId, imageFile);
+
+    // Get the file's public URL
+    const imageUrl = `https://cloud.appwrite.io/v1/storage/buckets/${bucketId}/files/${fileResponse.$id}/view?project=${process.env.APPWRITE_PROJECT_ID}`;
 
     // Validate the final data to be stored including the image URL
     const validatedData = propertyBackendSchema.parse({
@@ -50,14 +58,21 @@ export async function POST(request: Request) {
       image: imageUrl,
     });
 
-    // Add validated property to Firestore
-    const docRef = await addDoc(collection(db, "properties"), {
-      ...validatedData,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+    const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE;
+    const collectionId = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION;
 
-    return NextResponse.json({ id: docRef.id });
+    const docRef = await databases.createDocument(
+      databaseId,
+      collectionId,
+      ID.unique(),
+      {
+        ...validatedData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+    );
+
+    return NextResponse.json({ id: docRef.$id });
   } catch (error: any) {
     console.error("Error creating property:", error);
 

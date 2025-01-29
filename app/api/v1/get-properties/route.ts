@@ -1,18 +1,22 @@
 // app/api/properties/route.ts
 
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { databases } from "@/lib/appwrite";
 
-// GET all properties
 export async function GET() {
   try {
-    const querySnapshot = await getDocs(collection(db, "properties"));
-    const properties = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate(),
-      updatedAt: doc.data().updatedAt?.toDate(),
+    const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE;
+    const collectionId = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION;
+
+    // Fetch all documents in the "properties" collection
+    const response = await databases.listDocuments(databaseId, collectionId);
+
+    // Map and format the data as needed
+    const properties = response.documents.map((doc) => ({
+      id: doc.$id,
+      ...doc,
+      createdAt: doc.createdAt, // Use Appwrite's timestamp fields directly
+      updatedAt: doc.updatedAt,
     }));
 
     return NextResponse.json(properties);

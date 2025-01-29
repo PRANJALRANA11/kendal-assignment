@@ -1,5 +1,5 @@
 interface Property {
-  id: number;
+  id: string;
   name: string;
   description: string;
   image: string;
@@ -42,7 +42,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+import PropertyUpdateForm from "./properties-update-form";
 import * as React from "react";
 import { GalleryVerticalEnd, Search } from "lucide-react";
 import {
@@ -57,6 +57,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { FilterPanel } from "./ui/filter-panel";
+import { Button } from "./ui/button";
 
 // ... (keep existing interfaces)
 
@@ -73,6 +74,8 @@ export function PropertySidebar({
   onFiltersChange,
   ...props
 }: PropertySidebarProps) {
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [userId, setUserId] = React.useState("");
   const filteredProperties = React.useMemo(() => {
     return properties.filter((property) => {
       // Basic search filter
@@ -105,6 +108,19 @@ export function PropertySidebar({
         property.description
           .toLowerCase()
           .includes(filters.description.toLowerCase());
+      console.log("propertys:", property.name);
+      console.log("matchesSearch:", matchesSearch);
+      console.log("matchesPrice:", matchesPrice);
+      console.log("matchesBedrooms:", matchesBedrooms);
+      console.log("matchesBathrooms:", matchesBathrooms);
+      console.log("matchesArea:", matchesArea);
+      console.log("matchesType:", matchesType);
+      console.log("matchesTitle:", matchesTitle);
+      console.log("matchesDescription:", matchesDescription);
+      console.log("low:", filters.priceRange[0]);
+      console.log("high:", filters.priceRange[1]);
+      console.log("price:", property.price);
+      console.log("id:", property.id);
 
       return (
         matchesSearch &&
@@ -117,7 +133,17 @@ export function PropertySidebar({
         matchesDescription
       );
     });
-  }, [properties, searchQuery, filters]);
+  }, [
+    properties,
+    filters.priceRange,
+    filters.bedrooms,
+    filters.bathrooms,
+    filters.minArea,
+    filters.propertyType,
+    filters.title,
+    filters.description,
+    searchQuery,
+  ]);
 
   return (
     <Sidebar {...props}>
@@ -178,6 +204,7 @@ export function PropertySidebar({
             <FilterPanel
               properties={properties}
               onFiltersChange={onFiltersChange}
+              filters={filters}
             />
           </div>
         </div>
@@ -214,6 +241,20 @@ export function PropertySidebar({
                   <p className="text-sm text-gray-600 mt-2">
                     {property.description}
                   </p>
+                  <div
+                    onClick={() => {
+                      setIsDialogOpen(true);
+                      setUserId(property.id);
+                      console.log("user", userId);
+                    }}
+                  >
+                    {" "}
+                    <PropertyUpdateForm
+                      propertyId={userId}
+                      isdialogOpen={isDialogOpen}
+                      setIsDialogOpen={setIsDialogOpen}
+                    />
+                  </div>
                 </div>
               </div>
             ))}

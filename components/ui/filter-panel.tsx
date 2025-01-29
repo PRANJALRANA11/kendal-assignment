@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Sheet,
   SheetContent,
@@ -58,26 +58,43 @@ const PROPERTY_TYPES = [
   "Land",
 ];
 
-export function FilterPanel({ onFiltersChange, properties }: FilterPanelProps) {
-  const maxPrice = Math.max(...properties.map((p) => p.price));
-  const minPrice = Math.min(...properties.map((p) => p.price));
-  const maxArea = Math.max(...properties.map((p) => p.area));
+export function FilterPanel({
+  onFiltersChange,
+  properties,
+  filters,
+}: FilterPanelProps) {
+  // Calculate price bounds once on component mount
+  const maxPrice = React.useMemo(
+    () => Math.max(...properties.map((p) => p.price)),
+    [properties]
+  );
+  console.log("max price", maxPrice);
+  const minPrice = React.useMemo(
+    () => Math.min(...properties.map((p) => p.price)),
+    [properties]
+  );
+  console.log("min price", minPrice);
+  const maxArea = React.useMemo(
+    () => Math.max(...properties.map((p) => p.area)),
+    [properties]
+  );
 
-  const [filters, setFilters] = React.useState<PropertyFilters>({
-    priceRange: [minPrice, maxPrice],
-    bedrooms: null,
-    bathrooms: null,
-    minArea: null,
-    propertyType: null,
-    title: "",
-    description: "",
-  });
+  // Update filters when properties change
+  useEffect(() => {
+    onFiltersChange((prev) => ({
+      ...prev,
+      priceRange: [minPrice, maxPrice],
+    }));
+  }, [minPrice, maxPrice]);
 
-  const handleFilterChange = (field: keyof PropertyFilters, value: any) => {
-    const newFilters = { ...filters, [field]: value };
-    setFilters(newFilters);
-    onFiltersChange(newFilters);
-  };
+  const handleFilterChange = useCallback(
+    (field: keyof PropertyFilters, value: any) => {
+      const newFilters = { ...filters, [field]: value };
+      onFiltersChange(newFilters);
+      onFiltersChange(newFilters);
+    },
+    [filters, onFiltersChange]
+  );
 
   const formatPrice = (value: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -87,7 +104,7 @@ export function FilterPanel({ onFiltersChange, properties }: FilterPanelProps) {
     }).format(value);
   };
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     const defaultFilters = {
       priceRange: [minPrice, maxPrice],
       bedrooms: null,
@@ -97,9 +114,8 @@ export function FilterPanel({ onFiltersChange, properties }: FilterPanelProps) {
       title: "",
       description: "",
     };
-    setFilters(defaultFilters);
     onFiltersChange(defaultFilters);
-  };
+  }, [minPrice, maxPrice, onFiltersChange]);
 
   return (
     <Sheet>
@@ -117,17 +133,15 @@ export function FilterPanel({ onFiltersChange, properties }: FilterPanelProps) {
         </SheetHeader>
 
         <div className="grid gap-4 py-4">
-          {/* Price Range */}
           <div className="space-y-2">
             <Label>Price Range</Label>
             <div className="pt-2 px-2">
               <Slider
-                defaultValue={[minPrice, maxPrice]}
+                value={filters.priceRange}
                 max={maxPrice}
                 min={minPrice}
-                step={(maxPrice - minPrice) / 100}
-                value={filters.priceRange}
-                onValueChange={(value) =>
+                step={5000}
+                onValueChange={(value: [number, number]) =>
                   handleFilterChange("priceRange", value)
                 }
                 className="mb-2"
@@ -139,6 +153,7 @@ export function FilterPanel({ onFiltersChange, properties }: FilterPanelProps) {
             </div>
           </div>
 
+          {/* Rest of the component remains the same */}
           {/* Bedrooms & Bathrooms */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -192,7 +207,6 @@ export function FilterPanel({ onFiltersChange, properties }: FilterPanelProps) {
             </div>
           </div>
 
-          {/* Property Type */}
           <div className="space-y-2">
             <Label>Property Type</Label>
             <Select
@@ -218,7 +232,6 @@ export function FilterPanel({ onFiltersChange, properties }: FilterPanelProps) {
             </Select>
           </div>
 
-          {/* Minimum Area */}
           <div className="space-y-2">
             <Label>Minimum Area (sq ft)</Label>
             <Input
@@ -234,7 +247,6 @@ export function FilterPanel({ onFiltersChange, properties }: FilterPanelProps) {
             />
           </div>
 
-          {/* Title Search */}
           <div className="space-y-2">
             <Label>Title Contains</Label>
             <Input
@@ -244,7 +256,6 @@ export function FilterPanel({ onFiltersChange, properties }: FilterPanelProps) {
             />
           </div>
 
-          {/* Description Search */}
           <div className="space-y-2">
             <Label>Description Contains</Label>
             <Input
@@ -256,7 +267,6 @@ export function FilterPanel({ onFiltersChange, properties }: FilterPanelProps) {
             />
           </div>
 
-          {/* Reset Button */}
           <Button onClick={resetFilters} variant="outline" className="mt-4">
             Reset Filters
           </Button>

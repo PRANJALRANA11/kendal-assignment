@@ -2,7 +2,7 @@
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import L from "leaflet";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 // Dynamically load the map component without SSR
 const MapView = dynamic(() => import("@/components/ui/map"), { ssr: false });
 import { PropertySidebar } from "@/components/app-sidebar";
@@ -26,6 +26,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { GalleryVerticalEnd } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import axios from "axios";
 import {
   Dialog,
   DialogContent,
@@ -36,9 +37,10 @@ import {
 } from "@/components/ui/dialog";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import PropertyForm from "@/components/properties-add-form";
 
 interface Property {
-  id: number;
+  id: string;
   name: string;
   description: string;
   image: string;
@@ -97,6 +99,19 @@ export default function Dashboard() {
     description: "",
   });
 
+  useEffect(() => {
+    async function fetchProperties() {
+      try {
+        const response = await axios.get("/api/v1/get-properties");
+        setProperties(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.error("Error fetching properties:", error);
+      }
+    }
+    fetchProperties();
+  }, []);
+
   const handleSortChange = (option: string) => {
     setSortOption(option);
     setProperties((prevProperties) => {
@@ -122,8 +137,14 @@ export default function Dashboard() {
     );
   };
 
+  const handleSuccess = (id: string) => {
+    // setPropertyId(id);
+    alert(`Property created successfully with ID: ${id}`);
+  };
+
   return (
     <div className="block">
+      <PropertyForm onSuccess={handleSuccess} />
       <SidebarProvider
         style={{
           "--sidebar-width": "40rem",
