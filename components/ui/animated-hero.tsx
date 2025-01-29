@@ -2,16 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { MoveRight, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  SignInButton,
-  SignedIn,
-  SignedOut
-} from '@clerk/nextjs'
+import { SignInButton, SignedIn, SignedOut, useAuth } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
 
 function Hero() {
+  const { userId } = useAuth();
+  if (userId) {
+    redirect("/dashboard");
+  }
+
   const [titleNumber, setTitleNumber] = useState(0);
   const titles = useMemo(
-    () => ["amazing", "new", "wonderful", "beautiful", "smart"],
+    () => ["Homes", "Villas", "Apartments", "fastly", "smartly"],
     []
   );
 
@@ -37,7 +39,7 @@ function Hero() {
           </div>
           <div className="flex gap-4 flex-col">
             <h1 className="text-5xl md:text-7xl max-w-2xl tracking-tighter text-center font-regular">
-              <span className="text-spektr-cyan-50">This is something</span>
+              <span className="text-spektr-cyan-50">Find Your Awesome</span>
               <span className="relative flex w-full justify-center overflow-hidden text-center md:pb-4 md:pt-1">
                 &nbsp;
                 {titles.map((title, index) => (
@@ -65,10 +67,10 @@ function Hero() {
             </h1>
 
             <p className="text-lg md:text-xl leading-relaxed tracking-tight text-muted-foreground max-w-2xl text-center">
-              Managing a small business today is already tough. Avoid further
-              complications by ditching outdated, tedious trade methods. Our
-              goal is to streamline SMB trade, making it easier and faster than
-              ever.
+              Discover your perfect space where dreams meet reality. Our curated
+              selection of premium properties combines luxury, comfort, and
+              strategic locations to help you make the smartest investment in
+              your future. Let us guide you home.
             </p>
           </div>
           <div className="flex flex-row gap-3">
@@ -76,15 +78,12 @@ function Hero() {
               Jump on a call <PhoneCall className="w-4 h-4" />
             </Button>
             <SignedOut>
-            <SignInButton>
-            <Button size="lg"  className="gap-4 bg-black text-white">
-           
-            Sign up here <MoveRight className="w-4 h-4" />
-           
-            </Button>
-            </SignInButton>
-          </SignedOut>
-         
+              <SignInButton>
+                <Button size="lg" className="gap-4 bg-black text-white">
+                  Sign up here <MoveRight className="w-4 h-4" />
+                </Button>
+              </SignInButton>
+            </SignedOut>
           </div>
         </div>
       </div>

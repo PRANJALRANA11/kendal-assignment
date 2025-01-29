@@ -5,6 +5,7 @@ import {
   propertyBackendSchema,
   propertyFormSchema,
 } from "@/app/schema/property";
+import { databaseId, collectionId, bucketId } from "@/lib/config";
 
 export async function POST(request: Request) {
   try {
@@ -12,6 +13,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const imageFile = formData.get("image") as File | null;
     const propertyDataRaw = formData.get("data") as string | null;
+    console.log("property data", propertyDataRaw);
 
     if (!imageFile || !propertyDataRaw) {
       return NextResponse.json(
@@ -31,14 +33,15 @@ export async function POST(request: Request) {
       );
     }
 
+    // Extract ID from property data if it exists
+    const documentId = ID.unique();
+    console.log("Document ID to be used:", documentId);
+
     // Validate the incoming data including the image file
     const validatedFormData = propertyFormSchema.parse({
       ...propertyData,
       image: imageFile,
     });
-
-    // Upload image to Appwrite Storage
-    const bucketId = process.env.NEXT_PUBLIC_APPWRITE_BUCKET; // Replace with your Appwrite storage bucket ID
 
     const fileId = ID.unique(); // Generate a unique file ID
 
@@ -50,7 +53,7 @@ export async function POST(request: Request) {
     const fileResponse = await storage.createFile(bucketId, fileId, imageFile);
 
     // Get the file's public URL
-    const imageUrl = `https://cloud.appwrite.io/v1/storage/buckets/${bucketId}/files/${fileResponse.$id}/view?project=${process.env.APPWRITE_PROJECT_ID}`;
+    const imageUrl = `https://cloud.appwrite.io/v1/storage/buckets/${bucketId}/files/${fileResponse.$id}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT}`;
 
     // Validate the final data to be stored including the image URL
     const validatedData = propertyBackendSchema.parse({
@@ -58,14 +61,14 @@ export async function POST(request: Request) {
       image: imageUrl,
     });
 
-    const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE;
-    const collectionId = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION;
-
+    // Create document with either provided ID or generated ID
     const docRef = await databases.createDocument(
       databaseId,
       collectionId,
-      ID.unique(),
+      documentId, // Use the extracted or generated ID
       {
+        // @ts-ignore
+        id: documentId, // Include ID in the document data
         ...validatedData,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

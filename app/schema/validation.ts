@@ -1,4 +1,3 @@
-// utils/validationSchema.ts
 import * as Yup from "yup";
 
 // Define the validation schema using Yup

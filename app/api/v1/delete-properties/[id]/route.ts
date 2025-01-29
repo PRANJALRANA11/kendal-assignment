@@ -3,19 +3,17 @@ import { databases, storage } from "@/lib/appwrite";
 import { deletePropertyParamsSchema } from "@/app/schema/property";
 import { z } from "zod";
 import { Query } from "node-appwrite";
+import { databaseId, collectionId, bucketId } from "@/lib/config";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Validate params
-
-    const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE!;
-    const collectionId = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION!;
-    const bucketId = process.env.NEXT_PUBLIC_APPWRITE_BUCKET!;
+    // deletePropertyParamsSchema.parse({ id });
 
     // Fetch the property document
     const documentList = await databases.listDocuments(
@@ -53,6 +51,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.log(error.errors);
       return NextResponse.json(
         { error: "Validation failed", details: error.errors },
         { status: 400 }

@@ -49,6 +49,7 @@ export const propertyFormSchema = PropertyBaseSchema.extend({
 export const propertyBackendSchema = PropertyBaseSchema.extend({
   image: z.string().url("Invalid image URL"),
 });
+
 export const deletePropertyParamsSchema = z.object({
   id: z.string().uuid("Invalid property ID"),
 });

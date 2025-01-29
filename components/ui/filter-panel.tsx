@@ -19,36 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-
-interface PropertyFilters {
-  priceRange: [number, number];
-  bedrooms: number | null;
-  bathrooms: number | null;
-  minArea: number | null;
-  propertyType: string | null;
-  title: string;
-  description: string;
-}
-
-interface Property {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-  latitude: number;
-  longitude: number;
-  price: number;
-  bedrooms: number;
-  bathrooms: number;
-  propertyType: string;
-  area: number;
-}
-
-interface FilterPanelProps {
-  onFiltersChange: (filters: PropertyFilters) => void;
-  properties: Property[];
-}
-
+import { PropertyFilters, FilterPanelProps } from "@/lib/types";
 const PROPERTY_TYPES = [
   "House",
   "Apartment",
@@ -69,22 +40,19 @@ export function FilterPanel({
     [properties]
   );
   console.log("max price", maxPrice);
+
   const minPrice = React.useMemo(
     () => Math.min(...properties.map((p) => p.price)),
     [properties]
   );
   console.log("min price", minPrice);
-  const maxArea = React.useMemo(
-    () => Math.max(...properties.map((p) => p.area)),
-    [properties]
-  );
 
   // Update filters when properties change
   useEffect(() => {
-    onFiltersChange((prev) => ({
-      ...prev,
+    onFiltersChange({
+      ...filters,
       priceRange: [minPrice, maxPrice],
-    }));
+    });
   }, [minPrice, maxPrice]);
 
   const handleFilterChange = useCallback(
@@ -105,7 +73,7 @@ export function FilterPanel({
   };
 
   const resetFilters = useCallback(() => {
-    const defaultFilters = {
+    const defaultFilters: PropertyFilters = {
       priceRange: [minPrice, maxPrice],
       bedrooms: null,
       bathrooms: null,
@@ -120,11 +88,11 @@ export function FilterPanel({
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-          <Filter className="h-4 w-4" />
+        <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-black">
+          <Filter className="h-4 w-4 text-white" />
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-[300px] sm:w-[400px]">
+      <SheetContent className="w-[300px] sm:w-[400px] max-h-[100vh] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Filter Properties</SheetTitle>
           <SheetDescription>
@@ -144,7 +112,7 @@ export function FilterPanel({
                 onValueChange={(value: [number, number]) =>
                   handleFilterChange("priceRange", value)
                 }
-                className="mb-2"
+                className="mb-2 "
               />
               <div className="flex justify-between text-sm text-gray-500">
                 <span>{formatPrice(filters.priceRange[0])}</span>
@@ -167,13 +135,17 @@ export function FilterPanel({
                   )
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="">
                   <SelectValue placeholder="Any" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="any">Any</SelectItem>
                   {[1, 2, 3, 4, 5].map((num) => (
-                    <SelectItem key={num} value={num.toString()}>
+                    <SelectItem
+                      className="hover:bg-slate-50 cursor-pointer"
+                      key={num}
+                      value={num.toString()}
+                    >
                       {num}+
                     </SelectItem>
                   ))}
@@ -195,10 +167,14 @@ export function FilterPanel({
                 <SelectTrigger>
                   <SelectValue placeholder="Any" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="any">Any</SelectItem>
                   {[1, 2, 3, 4].map((num) => (
-                    <SelectItem key={num} value={num.toString()}>
+                    <SelectItem
+                      key={num}
+                      value={num.toString()}
+                      className="hover:bg-slate-50 cursor-pointer"
+                    >
                       {num}+
                     </SelectItem>
                   ))}
@@ -221,10 +197,14 @@ export function FilterPanel({
               <SelectTrigger>
                 <SelectValue placeholder="Any type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 <SelectItem value="any">Any type</SelectItem>
                 {PROPERTY_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
+                  <SelectItem
+                    key={type}
+                    value={type}
+                    className="hover:bg-slate-50 cursor-pointer"
+                  >
                     {type}
                   </SelectItem>
                 ))}
@@ -267,7 +247,11 @@ export function FilterPanel({
             />
           </div>
 
-          <Button onClick={resetFilters} variant="outline" className="mt-4">
+          <Button
+            onClick={resetFilters}
+            className="bg-black mt-4 text-white"
+            variant="outline"
+          >
             Reset Filters
           </Button>
         </div>

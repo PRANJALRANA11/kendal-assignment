@@ -1,6 +1,5 @@
 import { Client, Databases, Storage } from "node-appwrite";
-console.log("Appwrite Endpoint:", process.env.APPWRITE_ENDPOINT);
-console.log("Bucket ID:", process.env.APPWRITE_BUCKET_ID);
+
 // Initialize Appwrite client
 export const client = new Client();
 client

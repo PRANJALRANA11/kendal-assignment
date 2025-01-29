@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { databases, storage } from "@/lib/appwrite";
-import { z } from "zod";
 import { Query } from "node-appwrite";
+import { databaseId, collectionId, bucketId } from "@/lib/config";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params; // Directly access params without await
@@ -14,10 +14,6 @@ export async function PATCH(
     const formData = await request.formData();
     const imageFile = formData.get("image") as File | null;
     const propertyData = JSON.parse(formData.get("data") as string);
-
-    const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE!;
-    const collectionId = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION!;
-    const bucketId = process.env.NEXT_PUBLIC_APPWRITE_BUCKET!;
 
     // Fetch the existing property document
     const property = await databases.listDocuments(databaseId, collectionId, [

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useFormik } from "formik";
-import axios from "axios";
 import { validationSchema } from "@/app/schema/validation";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -12,19 +11,22 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Property } from "@/lib/types";
+import { post } from "@/lib/api";
+import { Pen } from "lucide-react";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
-interface PropertyFormProps {
-  onSuccess: (id: string) => void; // Callback on success
-}
-
-const PropertyForm: React.FC<PropertyFormProps> = ({ onSuccess }) => {
+const PropertyForm: React.FC<{ onSuccess?: (value: boolean) => void }> = ({
+  onSuccess,
+}) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const formik = useFormik<PropertyFormData>({
+  const formik = useFormik<Property>({
     initialValues: {
-      id: "",
+      id: uuidv4(),
       name: "",
       description: "",
       image: null,
@@ -45,23 +47,17 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onSuccess }) => {
       if (values.image) {
         formData.append("image", values.image);
       }
-      formData.append("id", uuidv4() + values.latitude + values.longitude);
 
       try {
-        const response = await axios.post(
-          "/api/v1/create-properties",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        onSuccess(response.data.id); // Pass the ID to the onSuccess callback
+        const response = await post("create-properties", formData);
         formik.resetForm();
         setIsDialogOpen(false); // Close the dialog on success
+        // @ts-ignore
+        onSuccess((prev) => !prev);
       } catch (error) {
+        alert(`form not submitted successfuly Error : ${error}`);
         console.error("Error creating property:", error);
+        setIsDialogOpen(false);
       } finally {
         setIsLoading(false);
       }
@@ -83,156 +79,193 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onSuccess }) => {
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button>Open Property Form</Button>
+        <Button variant="default" className="h-8 bg-black text-white ">
+          Create Property
+          <Pen className="ml-2 h-4 w-4" />
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Property</DialogTitle>
         </DialogHeader>
         <form onSubmit={formik.handleSubmit}>
-          <div className="space-y-4">
+          <div className="space-y-4  max-h-[40vh] lg:max-h-[80vh] overflow-y-auto">
             <div>
-              <label htmlFor="name">Name</label>
-              <input
+              <Label htmlFor="name">Name</Label>
+              <Input
                 id="name"
                 name="name"
                 type="text"
                 value={formik.values.name}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder="enter your property name"
               />
-              {formik.errors.name && <div>{formik.errors.name}</div>}
+              {formik.errors.name && (
+                <div className="text-red-400">{formik.errors.name}</div>
+              )}
             </div>
 
             <div>
-              <label htmlFor="description">Description</label>
-              <input
+              <Label htmlFor="description">Description</Label>
+              <Input
                 id="description"
                 name="description"
                 type="text"
                 value={formik.values.description}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder="enter your description"
               />
               {formik.errors.description && (
-                <div>{formik.errors.description}</div>
+                <div className="text-red-400">{formik.errors.description}</div>
               )}
             </div>
 
             <div>
-              <label htmlFor="price">Price</label>
-              <input
+              <Label htmlFor="price">Price</Label>
+              <Input
                 id="price"
                 name="price"
                 type="number"
                 value={formik.values.price}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder="enter your price"
               />
-              {formik.errors.price && <div>{formik.errors.price}</div>}
+              {formik.errors.price && (
+                <div className="text-red-400">{formik.errors.price}</div>
+              )}
             </div>
 
             <div>
-              <label htmlFor="latitude">Latitude</label>
-              <input
+              <Label htmlFor="latitude">Latitude</Label>
+              <Input
                 id="latitude"
                 name="latitude"
                 type="number"
                 value={formik.values.latitude}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder="enter your location"
               />
-              {formik.errors.latitude && <div>{formik.errors.latitude}</div>}
+              {formik.errors.latitude && (
+                <div className="text-red-400">{formik.errors.latitude}</div>
+              )}
             </div>
 
             <div>
-              <label htmlFor="longitude">Longitude</label>
-              <input
+              <Label htmlFor="longitude">Longitude</Label>
+              <Input
                 id="longitude"
                 name="longitude"
                 type="number"
                 value={formik.values.longitude}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder="enter your location"
               />
-              {formik.errors.longitude && <div>{formik.errors.longitude}</div>}
+              {formik.errors.longitude && (
+                <div className="text-red-400">{formik.errors.longitude}</div>
+              )}
             </div>
 
             <div>
-              <label htmlFor="bedrooms">Bedrooms</label>
-              <input
+              <Label htmlFor="bedrooms">Bedrooms</Label>
+              <Input
                 id="bedrooms"
                 name="bedrooms"
                 type="number"
                 value={formik.values.bedrooms}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder="enter your bedrooms"
               />
-              {formik.errors.bedrooms && <div>{formik.errors.bedrooms}</div>}
+              {formik.errors.bedrooms && (
+                <div className="text-red-400">{formik.errors.bedrooms}</div>
+              )}
             </div>
 
             <div>
-              <label htmlFor="bathrooms">Bathrooms</label>
-              <input
+              <Label htmlFor="bathrooms">Bathrooms</Label>
+              <Input
                 id="bathrooms"
                 name="bathrooms"
                 type="number"
                 value={formik.values.bathrooms}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder="enter your bathrooms"
               />
-              {formik.errors.bathrooms && <div>{formik.errors.bathrooms}</div>}
+              {formik.errors.bathrooms && (
+                <div className="text-red-400">{formik.errors.bathrooms}</div>
+              )}
             </div>
 
             <div>
-              <label htmlFor="propertyType">Property Type</label>
-              <input
+              <Label htmlFor="propertyType">Property Type</Label>
+              <Input
                 id="propertyType"
                 name="propertyType"
                 type="text"
                 value={formik.values.propertyType}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder="enter your property type"
               />
               {formik.errors.propertyType && (
-                <div>{formik.errors.propertyType}</div>
+                <div className="text-red-400">{formik.errors.propertyType}</div>
               )}
             </div>
 
             <div>
-              <label htmlFor="area">Area</label>
-              <input
+              <Label htmlFor="area">Area</Label>
+              <Input
                 id="area"
                 name="area"
                 type="number"
                 value={formik.values.area}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder="enter your area"
               />
-              {formik.errors.area && <div>{formik.errors.area}</div>}
+              {formik.errors.area && (
+                <div className="text-red-400">{formik.errors.area}</div>
+              )}
             </div>
 
             <div>
-              <label htmlFor="image">Image</label>
-              <input
+              <Label htmlFor="image">Image</Label>
+              <Input
                 id="image"
                 name="image"
                 type="file"
                 onChange={handleImageChange}
                 className="input"
+                placeholder="Insert an image"
               />
               {imagePreview && (
                 <img src={imagePreview} alt="Image preview" width={100} />
               )}
-              {formik.errors.image && <div>{formik.errors.image}</div>}
+              {formik.errors.image && (
+                <div className="text-red-400">{formik.errors.image}</div>
+              )}
             </div>
           </div>
 
           <DialogFooter>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Submitting..." : "Submit"}
+            <Button
+              type="submit"
+              className="bg-black text-white"
+              disabled={isLoading}
+            >
+              {isLoading ? <span className="loader"></span> : "Submit"}
             </Button>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button
+              variant="outline"
+              className="bg-white mb-4 lg:mb-0"
+              onClick={() => setIsDialogOpen(false)}
+            >
               Cancel
             </Button>
           </DialogFooter>

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { databases } from "@/lib/appwrite";
 import { Query } from "node-appwrite";
+import { databaseId, collectionId, bucketId } from "@/lib/config";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -16,9 +17,6 @@ export async function GET(
         { status: 400 }
       );
     }
-
-    const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE as string;
-    const collectionId = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION as string;
 
     // Fetch the property document from Appwrite
     const property = await databases.listDocuments(databaseId, collectionId, [

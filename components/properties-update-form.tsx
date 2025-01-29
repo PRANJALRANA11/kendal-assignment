@@ -10,21 +10,21 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-
-interface PropertyFormProps {
-  propertyId: string;
-  setIsDialogOpen: (open: boolean) => void;
-  isDialogOpen: boolean;
-}
+import { PropertyFormProps } from "@/lib/types";
+import { patch, deleteRequest, get } from "@/lib/api";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
 
 const PropertyUpdateForm: React.FC<PropertyFormProps> = ({
   propertyId,
-  setIsDialogOpen,
-  isDialogOpen,
+  onSuccess,
 }) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingDelete, setIsLoadingDelete] = useState(false);
   const [originalData, setOriginalData] = useState<any>(null);
+  const [placeholderData, setPlaceholderData] = useState<any>(null);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   useEffect(() => {
     if (propertyId) {
@@ -35,8 +35,10 @@ const PropertyUpdateForm: React.FC<PropertyFormProps> = ({
 
   const fetchPropertyData = async () => {
     try {
-      const response = await axios.get(`/api/v1/get-property/${propertyId}`);
+      const response = await get(`get-property/${propertyId}`);
       setOriginalData(response.data);
+      setPlaceholderData(response.data.documents[0]);
+      console.log("response ss", response.data.documents[0]);
       formik.setValues(response.data);
     } catch (error) {
       console.error("Error fetching property:", error);
@@ -45,12 +47,16 @@ const PropertyUpdateForm: React.FC<PropertyFormProps> = ({
 
   const deleteProperty = async () => {
     try {
-      const response = await axios.delete(
-        `/api/v1/delete-properties/${propertyId}`
-      );
+      setIsLoadingDelete(true);
+      const response = await deleteRequest(`delete-properties/${propertyId}`);
       console.log("Delete success:", response.data);
+      // @ts-ignore
+      onSuccess((prev) => !prev);
       setIsDialogOpen(false); // Close dialog on success
+      setIsLoadingDelete(false);
     } catch (error: any) {
+      setIsLoadingDelete(false);
+      alert(`form not submitted successfuly Error : ${error}`);
       console.error(
         "Error deleting property:",
         error.response?.data || error.message
@@ -65,7 +71,7 @@ const PropertyUpdateForm: React.FC<PropertyFormProps> = ({
       description: "",
       image: null,
       latitude: 0,
-      longitude: 0,
+      longitude: 1,
       price: 0,
       bedrooms: 0,
       bathrooms: 0,
@@ -78,8 +84,11 @@ const PropertyUpdateForm: React.FC<PropertyFormProps> = ({
 
       // Filter only changed fields
       const updatedFields: any = {};
+
       Object.keys(values).forEach((key) => {
+        // @ts-ignore
         if (values[key] !== originalData[key]) {
+          // @ts-ignore
           updatedFields[key] = values[key];
         }
       });
@@ -98,15 +107,14 @@ const PropertyUpdateForm: React.FC<PropertyFormProps> = ({
       }
 
       try {
-        await axios.patch(`/api/v1/update-properties/${propertyId}`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        await patch(`update-properties/${propertyId}`, formData);
 
         setIsDialogOpen(false);
+        // @ts-ignore
+        onSuccess((prev) => !prev);
       } catch (error) {
         console.error("Error updating property:", error);
+        alert(`form not submitted successfuly Error : ${error}`);
       } finally {
         setIsLoading(false);
       }
@@ -128,125 +136,134 @@ const PropertyUpdateForm: React.FC<PropertyFormProps> = ({
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button>Open Property Form</Button>
+        <Button className="bg-black text-white mt-4">Update</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Update Property</DialogTitle>
         </DialogHeader>
         <form onSubmit={formik.handleSubmit}>
-          <div className="space-y-4">
+          <div className="space-y-4  max-h-[40vh] lg:max-h-[80vh] overflow-y-auto">
             <div>
-              <label htmlFor="name">Name</label>
-              <input
+              <Label htmlFor="name">Name</Label>
+              <Input
                 id="name"
                 name="name"
                 type="text"
                 value={formik.values.name}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder={placeholderData?.name}
               />
             </div>
 
             <div>
-              <label htmlFor="description">Description</label>
-              <input
+              <Label htmlFor="description">Description</Label>
+              <Input
                 id="description"
                 name="description"
                 type="text"
                 value={formik.values.description}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder={placeholderData?.description}
               />
             </div>
 
             <div>
-              <label htmlFor="price">Price</label>
-              <input
+              <Label htmlFor="price">Price</Label>
+              <Input
                 id="price"
                 name="price"
                 type="number"
                 value={formik.values.price}
                 onChange={formik.handleChange}
-                className="input"
+                className="input "
+                placeholder={placeholderData?.price}
               />
             </div>
 
             <div>
-              <label htmlFor="latitude">Latitude</label>
-              <input
+              <Label htmlFor="latitude">Latitude</Label>
+              <Input
                 id="latitude"
                 name="latitude"
                 type="number"
                 value={formik.values.latitude}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder={placeholderData?.latitude}
               />
             </div>
 
             <div>
-              <label htmlFor="longitude">Longitude</label>
-              <input
+              <Label htmlFor="longitude">Longitude</Label>
+              <Input
                 id="longitude"
                 name="longitude"
                 type="number"
                 value={formik.values.longitude}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder={placeholderData?.longitude}
               />
             </div>
 
             <div>
-              <label htmlFor="bedrooms">Bedrooms</label>
-              <input
+              <Label htmlFor="bedrooms">Bedrooms</Label>
+              <Input
                 id="bedrooms"
                 name="bedrooms"
                 type="number"
                 value={formik.values.bedrooms}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder={placeholderData?.bedrooms}
               />
             </div>
 
             <div>
-              <label htmlFor="bathrooms">Bathrooms</label>
-              <input
+              <Label htmlFor="bathrooms">Bathrooms</Label>
+              <Input
                 id="bathrooms"
                 name="bathrooms"
                 type="number"
                 value={formik.values.bathrooms}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder={placeholderData?.bathrooms}
               />
             </div>
 
             <div>
-              <label htmlFor="propertyType">Property Type</label>
-              <input
+              <Label htmlFor="propertyType">Property Type</Label>
+              <Input
                 id="propertyType"
                 name="propertyType"
                 type="text"
                 value={formik.values.propertyType}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder={placeholderData?.propertyType}
               />
             </div>
 
             <div>
-              <label htmlFor="area">Area</label>
-              <input
+              <Label htmlFor="area">Area</Label>
+              <Input
                 id="area"
                 name="area"
                 type="number"
                 value={formik.values.area}
                 onChange={formik.handleChange}
                 className="input"
+                placeholder={placeholderData?.area}
               />
             </div>
 
             <div>
-              <label htmlFor="image">Image</label>
-              <input
+              <Label htmlFor="image">Image</Label>
+              <Input
                 id="image"
                 name="image"
                 type="file"
@@ -254,17 +271,33 @@ const PropertyUpdateForm: React.FC<PropertyFormProps> = ({
                 className="input"
               />
               {imagePreview && (
-                <img src={imagePreview} alt="Image preview" width={100} />
+                <img
+                  src={imagePreview || placeholderData?.image}
+                  alt="Image preview"
+                  width={100}
+                />
               )}
             </div>
           </div>
 
           <DialogFooter>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Updating..." : "Update"}
+            <Button
+              type="submit"
+              className="bg-black text-white"
+              disabled={isLoading}
+            >
+              {isLoading ? <span className="loader"></span> : "Update"}
             </Button>
-            <Button variant="outline" onClick={deleteProperty}>
-              delete property
+            <Button
+              variant="destructive"
+              className="bg-red-500 text-white mb-4 lg:mb-0"
+              onClick={deleteProperty}
+            >
+              {isLoadingDelete ? (
+                <span className="loader"></span>
+              ) : (
+                "delete property"
+              )}
             </Button>
           </DialogFooter>
         </form>

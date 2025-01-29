@@ -2,12 +2,10 @@
 
 import { NextResponse } from "next/server";
 import { databases } from "@/lib/appwrite";
+import { databaseId, collectionId, bucketId } from "@/lib/config";
 
 export async function GET() {
   try {
-    const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE;
-    const collectionId = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION;
-
     // Fetch all documents in the "properties" collection
     const response = await databases.listDocuments(databaseId, collectionId);
 

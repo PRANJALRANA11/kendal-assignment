@@ -1,39 +1,4 @@
-interface Property {
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-  latitude: number;
-  longitude: number;
-  price: number;
-  bedrooms: number;
-  bathrooms: number;
-  propertyType: string;
-  area: number;
-}
-type Filters = {
-  priceRange: [number, number];
-  bedrooms: number | null;
-  bathrooms: number | null;
-  minArea: number | null;
-  propertyType: string | null;
-  title: string;
-  description: string;
-};
-
-interface PropertySidebarProps {
-  properties: Property[];
-  selectedPropertyId: number | null;
-  setSelectedPropertyId: (id: number | null) => void;
-  handlePropertyChange: (id: number, updatedData: Partial<Property>) => void;
-  sortOption: string;
-  handleSortChange: (option: string) => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  filters: Filters;
-  onFiltersChange: (filters: Filters) => void;
-}
-
+import { PropertySidebarProps } from "@/lib/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,9 +22,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { FilterPanel } from "./ui/filter-panel";
-import { Button } from "./ui/button";
-
-// ... (keep existing interfaces)
 
 export function PropertySidebar({
   properties,
@@ -72,10 +34,12 @@ export function PropertySidebar({
   setSearchQuery,
   filters,
   onFiltersChange,
+  onSuccess,
   ...props
 }: PropertySidebarProps) {
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [userId, setUserId] = React.useState("");
+
+  // to filter the properties based on search and filter
   const filteredProperties = React.useMemo(() => {
     return properties.filter((property) => {
       // Basic search filter
@@ -108,19 +72,6 @@ export function PropertySidebar({
         property.description
           .toLowerCase()
           .includes(filters.description.toLowerCase());
-      console.log("propertys:", property.name);
-      console.log("matchesSearch:", matchesSearch);
-      console.log("matchesPrice:", matchesPrice);
-      console.log("matchesBedrooms:", matchesBedrooms);
-      console.log("matchesBathrooms:", matchesBathrooms);
-      console.log("matchesArea:", matchesArea);
-      console.log("matchesType:", matchesType);
-      console.log("matchesTitle:", matchesTitle);
-      console.log("matchesDescription:", matchesDescription);
-      console.log("low:", filters.priceRange[0]);
-      console.log("high:", filters.priceRange[1]);
-      console.log("price:", property.price);
-      console.log("id:", property.id);
 
       return (
         matchesSearch &&
@@ -155,22 +106,27 @@ export function PropertySidebar({
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <GalleryVerticalEnd className="w-4 h-4" />
+                      <button>
+                        <GalleryVerticalEnd className="w-4 h-4" />
+                      </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuLabel>Sort Options</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
+                        className="hover:bg-slate-100 cursor-pointer"
                         onClick={() => handleSortChange("price")}
                       >
                         Price
                       </DropdownMenuItem>
                       <DropdownMenuItem
+                        className="hover:bg-slate-100 cursor-pointer"
                         onClick={() => handleSortChange("area")}
                       >
                         Area
                       </DropdownMenuItem>
                       <DropdownMenuItem
+                        className="hover:bg-slate-100 cursor-pointer"
                         onClick={() => handleSortChange("bedrooms")}
                       >
                         Bedrooms
@@ -179,10 +135,8 @@ export function PropertySidebar({
                   </DropdownMenu>
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold hidden md:block">
-                    Property Listings
-                  </span>
-                  <span className="text-sm text-gray-500 hidden md:block">
+                  <span className="font-semibold ">Property Listings</span>
+                  <span className="text-sm text-gray-500">
                     {filteredProperties.length} properties found
                   </span>
                 </div>
@@ -196,7 +150,7 @@ export function PropertySidebar({
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 placeholder="Search properties..."
-                className="pl-8"
+                className="pl-8 bg-white"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -211,7 +165,7 @@ export function PropertySidebar({
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <div className="grid gap-4 p-4">
+          <div className="grid gap-4 lg:grid-cols-2 p-4">
             {filteredProperties.map((property) => (
               <div
                 key={property.id}
@@ -223,7 +177,7 @@ export function PropertySidebar({
                 }`}
               >
                 <img
-                  src={property.image}
+                  src={property.image || ""}
                   alt={property.name}
                   className="h-48 w-full object-cover"
                 />
@@ -243,16 +197,14 @@ export function PropertySidebar({
                   </p>
                   <div
                     onClick={() => {
-                      setIsDialogOpen(true);
                       setUserId(property.id);
-                      console.log("user", userId);
+                      console.log("clicked", property.id);
                     }}
                   >
                     {" "}
                     <PropertyUpdateForm
                       propertyId={userId}
-                      isdialogOpen={isDialogOpen}
-                      setIsDialogOpen={setIsDialogOpen}
+                      onSuccess={onSuccess}
                     />
                   </div>
                 </div>
