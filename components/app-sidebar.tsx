@@ -165,7 +165,7 @@ export function PropertySidebar({
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <div className="grid gap-4 lg:grid-cols-2 p-4">
+          <div className="grid gap-2 lg:grid-cols-2 p-4">
             {filteredProperties.map((property) => (
               <div
                 key={property.id}
@@ -186,7 +186,7 @@ export function PropertySidebar({
                   <p className="font-medium text-primary mt-1">
                     ${property.price.toLocaleString()}
                   </p>
-                  <div className="flex gap-3 text-sm text-gray-600 mt-2">
+                  <div className="flex flex-wrap lg:gap-3 gap-1 text-sm text-gray-600 mt-2">
                     <span>{property.bedrooms} beds</span>
                     <span>{property.bathrooms} baths</span>
                     <span>{property.area} sq ft</span>
