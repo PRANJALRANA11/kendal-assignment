@@ -62,11 +62,11 @@ Technologies used in the project:
 *   webgl rendering
 
 <h2> 🏗️ Project Architecture </h2>
-![Screenshot 2025-01-30 135309](https://github.com/user-attachments/assets/5e0342a9-4da7-4c96-87af-c11bd92b91f7)
+<img src="https://github.com/user-attachments/assets/5e0342a9-4da7-4c96-87af-c11bd92b91f7" alt="project-screenshot" width="1000" height="400/">
 
 
 <h2>📂 Folder Structure </h2>
-![Screenshot 2025-01-30 135829](https://github.com/user-attachments/assets/df9d398f-5441-4f7a-be89-57099ef93354)
+<img src="https://github.com/user-attachments/assets/df9d398f-5441-4f7a-be89-57099ef93354" alt="project-screenshot" width="1000" height="400/">
 
 
 <h2> 🤔 Problems Faced </h2>
