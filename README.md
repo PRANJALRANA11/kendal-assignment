@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
 
-First, run the development server:
+<p align="center"><img src="https://socialify.git.ci/PRANJALRANA11/kendal-assignment/image?custom_description=Get+best+property+listings&amp;description=1&amp;font=Inter&amp;forks=1&amp;issues=1&amp;language=1&amp;name=1&amp;owner=1&amp;pattern=Charlie+Brown&amp;pulls=1&amp;stargazers=1&amp;theme=Dark" alt="project-image"></p>
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+<h2>🚀 Demo</h2>
+
+[h](h)
+
+
+
+  
+  
+<h2>🧐 Features</h2>
+
+Here're some of the project's best features:
+
+*   Display property listings as markers on the map.
+*   Clicking a marker should open a popup with the property name description and an image.
+*   The map should allow users to pan and zoom.
+*   seamless interaction between the map and sidebar.
+*   add new properties or edit the addresses of existing properties
+*   Sorting filter search
+*   Draw (this feature works locally but on deployed version sidebar is not updating for map draw because of ssr build issues))
+
+<h2>🛠️ Installation Steps:</h2>
+
+<p>1. Clone the repo</p>
+
+```
+https://github.com/PRANJALRANA11/kendal-assignment.git
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+<p>2. install dependancies</p>
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+<p>3. run dev server and access on localhost:3000</p>
 
-## Learn More
+```
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+<p>4. before running server remember to paste .env.local folder in root dir and also ensure you have node and npm installed</p>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+  
+  
+<h2>💻 Built with</h2>
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Technologies used in the project:
 
-## Deploy on Vercel
+*   Nextjs
+*   Shadcn ui / tailwindcss
+*   appwrite
+*   clerk
+*   formik
+*   zod
+*   typescript
+*   leaflet
+*   webgl rendering
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+<h2> 🏗️ Project Architecture </h2>
+![Screenshot 2025-01-30 135309](https://github.com/user-attachments/assets/5e0342a9-4da7-4c96-87af-c11bd92b91f7)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+<h2>📂 Folder Structure </h2>
+![Screenshot 2025-01-30 135829](https://github.com/user-attachments/assets/df9d398f-5441-4f7a-be89-57099ef93354)
+
+
+<h2> 🤔 Problems Faced </h2>
+
+- Integrating leaflet map with sidebar was a bit challenge as tiles was not loading correctly (fixed by dynamic routing)
+
+- draw feature was not getting implemented correctly as getting markers inside the polygon was something that takes time (created a function for this)
+
+- random CSS issues with WebGL rendering of globe and map on mobile and desktop view
+
+
+
+
+
+
+
