@@ -10,6 +10,7 @@ import {
 import PropertyUpdateForm from "./properties-update-form";
 import * as React from "react";
 import { GalleryVerticalEnd, Search } from "lucide-react";
+import L from "leaflet";
 import {
   Sidebar,
   SidebarContent,
@@ -35,6 +36,7 @@ export function PropertySidebar({
   filters,
   onFiltersChange,
   onSuccess,
+  drawnPolygon,
   ...props
 }: PropertySidebarProps) {
   const [userId, setUserId] = React.useState("");
@@ -73,6 +75,13 @@ export function PropertySidebar({
           .toLowerCase()
           .includes(filters.description.toLowerCase());
 
+      // Check if property is inside polygon (if one exists)
+      const matchesPolygon = drawnPolygon
+        ? drawnPolygon
+            .getBounds()
+            .contains(L.latLng(property.latitude, property.longitude))
+        : true;
+
       return (
         matchesSearch &&
         matchesPrice &&
@@ -81,7 +90,8 @@ export function PropertySidebar({
         matchesArea &&
         matchesType &&
         matchesTitle &&
-        matchesDescription
+        matchesDescription &&
+        matchesPolygon
       );
     });
   }, [
@@ -94,6 +104,7 @@ export function PropertySidebar({
     filters.title,
     filters.description,
     searchQuery,
+    drawnPolygon,
   ]);
 
   return (

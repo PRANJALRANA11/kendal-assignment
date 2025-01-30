@@ -61,10 +61,11 @@ const MapView: React.FC<MapComponentProps> = ({
   setSelectedPropertyId,
   searchQuery,
   filters,
+  drawnPolygon,
+  setDrawnPolygon,
 }) => {
   const mapRef = useRef<L.Map | null>(null);
   const markerRefs = useRef<Record<string, L.Marker>>(Object.create(null));
-  const [drawnPolygon, setDrawnPolygon] = useState<L.Polygon | null>(null);
 
   // Filter properties based on search query and filters
   const filteredProperties = useMemo(() => {

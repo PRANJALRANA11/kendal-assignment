@@ -45,6 +45,7 @@ export default function Dashboard() {
     title: "",
     description: "",
   });
+  const [drawnPolygon, setDrawnPolygon] = useState<L.Polygon | null>(null);
 
   useEffect(() => {
     async function fetchProperties() {
@@ -105,6 +106,7 @@ export default function Dashboard() {
           filters={filters}
           onFiltersChange={setFilters}
           onSuccess={setOnSuccess}
+          drawnPolygon={drawnPolygon}
         />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 border-b">
@@ -140,6 +142,8 @@ export default function Dashboard() {
             setSelectedPropertyId={setSelectedPropertyId}
             searchQuery={searchQuery}
             filters={filters}
+            setDrawnPolygon={setDrawnPolygon}
+            drawnPolygon={drawnPolygon}
           />
         </SidebarInset>
       </SidebarProvider>

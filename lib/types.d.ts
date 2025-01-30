@@ -46,6 +46,7 @@ interface PropertySidebarProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
   onSuccess?: (value: boolean) => void;
+  drawnPolygon: L.Polygon | null;
 }
 
 interface PropertyFilters {
@@ -70,6 +71,8 @@ interface MapComponentProps {
   setSelectedPropertyId: (id: string | null) => void;
   searchQuery: string;
   filters: PropertyFilters;
+  drawnPolygon: L.Polygon | null;
+  setDrawnPolygon: (polygon: L.Polygon | null) => void;
 }
 
 interface PropertyFormProps {
