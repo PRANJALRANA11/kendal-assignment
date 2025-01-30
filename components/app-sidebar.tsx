@@ -168,10 +168,10 @@ export function PropertySidebar({
           <div className="grid gap-2 lg:grid-cols-2 p-4">
             {filteredProperties.map((property) => (
               <div
-                key={property.id}
-                onClick={() => setSelectedPropertyId(property.id)}
+                key={property.$id}
+                onClick={() => setSelectedPropertyId(property.$id)}
                 className={`flex flex-col rounded-lg border bg-white shadow-md overflow-hidden cursor-pointer transition-all duration-200 ${
-                  selectedPropertyId === property.id
+                  selectedPropertyId === property.$id
                     ? "ring-2 ring-primary border-primary"
                     : "hover:shadow-lg"
                 }`}
@@ -197,8 +197,8 @@ export function PropertySidebar({
                   </p>
                   <div
                     onClick={() => {
-                      setUserId(property.id);
-                      console.log("clicked", property.id);
+                      setUserId(property.$id);
+                      console.log("clicked", property.$id);
                     }}
                   >
                     {" "}

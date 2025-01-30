@@ -11,7 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Property } from "@/lib/types";
+import { PropertyFormData } from "@/lib/types";
 import { post } from "@/lib/api";
 import { Pen } from "lucide-react";
 import { Input } from "./ui/input";
@@ -24,9 +24,8 @@ const PropertyForm: React.FC<{ onSuccess?: (value: boolean) => void }> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const formik = useFormik<Property>({
+  const formik = useFormik<PropertyFormData>({
     initialValues: {
-      id: uuidv4(),
       name: "",
       description: "",
       image: null,
@@ -41,7 +40,6 @@ const PropertyForm: React.FC<{ onSuccess?: (value: boolean) => void }> = ({
     validationSchema,
     onSubmit: async (values) => {
       setIsLoading(true);
-
       const formData = new FormData();
       formData.append("data", JSON.stringify(values));
       if (values.image) {

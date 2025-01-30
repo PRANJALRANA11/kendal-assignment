@@ -1,5 +1,17 @@
 export interface Property {
-  id: string;
+  $id: string;
+  name: string;
+  description: string;
+  image: string | null;
+  latitude: number;
+  longitude: number;
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  propertyType: string;
+  area: number;
+}
+export interface PropertyFormData {
   name: string;
   description: string;
   image: string | null;
@@ -62,5 +74,5 @@ interface MapComponentProps {
 
 interface PropertyFormProps {
   propertyId: string;
-  onSuccess?: (value: boolean) => void
+  onSuccess?: (value: boolean) => void;
 }

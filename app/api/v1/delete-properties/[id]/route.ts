@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { databases, storage } from "@/lib/appwrite";
-import { deletePropertyParamsSchema } from "@/app/schema/property";
 import { z } from "zod";
-import { Query } from "node-appwrite";
 import { databaseId, collectionId, bucketId } from "@/lib/config";
 
 export async function DELETE(
@@ -12,43 +10,44 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // Validate params
-    // deletePropertyParamsSchema.parse({ id });
-
-    // Fetch the property document
-    const documentList = await databases.listDocuments(
-      databaseId,
-      collectionId,
-      [Query.equal("id", id)]
-    );
-
-    // Check if the property exists
-    if (!documentList.documents.length) {
-      return NextResponse.json(
-        { error: "Property not found" },
-        { status: 404 }
+    try {
+      // Fetch the property document directly by document ID
+      const document = await databases.getDocument(
+        databaseId,
+        collectionId,
+        id
       );
-    }
 
-    const document = documentList.documents[0];
-
-    // Extract image URL if exists
-    const imageUrl = document?.image;
-    if (imageUrl) {
-      try {
-        const fileId = imageUrl.split("/").pop(); // Extract file ID from URL
-        if (fileId) {
-          await storage.deleteFile(bucketId, fileId);
+      // Extract image URL if exists
+      const imageUrl = document?.image;
+      console.log("imageUrl", imageUrl);
+      if (imageUrl) {
+        try {
+          const fileId = imageUrl.match(/\/files\/([^/]+)\//)?.[1];
+          // Extract file ID from URL
+          console.log("file id", fileId);
+          if (fileId) {
+            await storage.deleteFile(bucketId, fileId);
+          }
+        } catch (error) {
+          console.warn("Error deleting image:", error);
         }
-      } catch (error) {
-        console.warn("Error deleting image:", error);
       }
+
+      // Delete the property document
+      await databases.deleteDocument(databaseId, collectionId, id);
+
+      return NextResponse.json({ success: true });
+    } catch (error: any) {
+      // Check if the error is due to document not found
+      if (error?.code === 404) {
+        return NextResponse.json(
+          { error: "Property not found" },
+          { status: 404 }
+        );
+      }
+      throw error; // Re-throw other errors to be caught by the outer try-catch
     }
-
-    // Delete the property document
-    await databases.deleteDocument(databaseId, collectionId, document.$id);
-
-    return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.log(error.errors);

@@ -3,7 +3,6 @@ import { z } from "zod";
 
 // Shared base schema for property data
 export const PropertyBaseSchema = z.object({
-  id: z.string(),
   name: z.string(),
   description: z.string(),
   image: z.string().url("Invalid image URL"),
@@ -55,7 +54,6 @@ export const deletePropertyParamsSchema = z.object({
 });
 
 export const updatePropertySchema = z.object({
-  id: z.string().uuid("Invalid property ID"),
   data: z.object({
     name: z.string().optional(),
     description: z.string().optional(),

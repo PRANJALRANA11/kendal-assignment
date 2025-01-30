@@ -35,10 +35,10 @@ const MapController: React.FC<{
 
   useEffect(() => {
     if (selectedPropertyId) {
-      const property = properties.find((p) => p.id === selectedPropertyId);
+      const property = properties.find((p) => p.$id === selectedPropertyId);
       if (
         property &&
-        filteredProperties.some((fp) => fp.id === selectedPropertyId)
+        filteredProperties.some((fp) => fp.$id === selectedPropertyId)
       ) {
         map.setView([property.latitude, property.longitude], 16, {
           animate: true,
@@ -150,7 +150,7 @@ const MapView: React.FC<MapComponentProps> = ({
     <MapContainer
       center={[37.7749, -122.4194]}
       zoom={13}
-      className="h-full w-[100vw] z-0"
+      className="h-full w-[100vh] z-0"
       ref={mapRef}
     >
       <FeatureGroup>
@@ -179,16 +179,16 @@ const MapView: React.FC<MapComponentProps> = ({
 
         {filteredProperties.map((property) => (
           <Marker
-            key={property.id}
+            key={property.$id}
             position={[property.latitude, property.longitude]}
             ref={(marker) => {
-              if (marker) markerRefs.current[property.id] = marker;
+              if (marker) markerRefs.current[property.$id] = marker;
             }}
             eventHandlers={{
-              click: () => setSelectedPropertyId(property.id),
+              click: () => setSelectedPropertyId(property.$id),
             }}
             icon={
-              selectedPropertyId === property.id ? selectedIcon : customIcon
+              selectedPropertyId === property.$id ? selectedIcon : customIcon
             }
           >
             <Popup className="property-popup">

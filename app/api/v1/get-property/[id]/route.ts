@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { databases } from "@/lib/appwrite";
-import { Query } from "node-appwrite";
-import { databaseId, collectionId, bucketId } from "@/lib/config";
+import { databaseId, collectionId } from "@/lib/config";
 
 export async function GET(
   request: Request,
@@ -9,7 +8,6 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    console.log("id", id);
 
     if (!id) {
       return NextResponse.json(
@@ -18,15 +16,28 @@ export async function GET(
       );
     }
 
-    // Fetch the property document from Appwrite
-    const property = await databases.listDocuments(databaseId, collectionId, [
-      Query.equal("id", id),
-    ]);
+    try {
+      // Fetch the property document directly by document ID
+      const property = await databases.getDocument(
+        databaseId,
+        collectionId,
+        id
+      );
 
-    return NextResponse.json(
-      { success: true, data: property },
-      { status: 200 }
-    );
+      return NextResponse.json(
+        { success: true, data: property },
+        { status: 200 }
+      );
+    } catch (error: any) {
+      // Check if the error is due to document not found
+      if (error?.code === 404) {
+        return NextResponse.json(
+          { error: "Property not found" },
+          { status: 404 }
+        );
+      }
+      throw error; // Re-throw other errors to be caught by the outer try-catch
+    }
   } catch (error) {
     console.error("Error fetching property:", error);
     return NextResponse.json(

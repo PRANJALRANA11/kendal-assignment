@@ -80,7 +80,7 @@ export default function Dashboard() {
   const handlePropertyChange = (id: string, updatedData: Partial<Property>) => {
     setProperties((prevProperties) =>
       prevProperties.map((property) =>
-        property.id === id ? { ...property, ...updatedData } : property
+        property.$id === id ? { ...property, ...updatedData } : property
       )
     );
   };

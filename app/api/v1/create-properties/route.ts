@@ -13,7 +13,6 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const imageFile = formData.get("image") as File | null;
     const propertyDataRaw = formData.get("data") as string | null;
-    console.log("property data", propertyDataRaw);
 
     if (!imageFile || !propertyDataRaw) {
       return NextResponse.json(
@@ -33,9 +32,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Extract ID from property data if it exists
+    // Generate unique IDs for both document and file
     const documentId = ID.unique();
-    console.log("Document ID to be used:", documentId);
+    const fileId = ID.unique();
 
     // Validate the incoming data including the image file
     const validatedFormData = propertyFormSchema.parse({
@@ -43,13 +42,7 @@ export async function POST(request: Request) {
       image: imageFile,
     });
 
-    const fileId = ID.unique(); // Generate a unique file ID
-
-    console.log("Starting file upload...");
-    console.log("Bucket ID:", bucketId);
-    console.log("File ID:", fileId);
-    console.log("Image File:", imageFile);
-
+    // Upload the image file
     const fileResponse = await storage.createFile(bucketId, fileId, imageFile);
 
     // Get the file's public URL
@@ -61,17 +54,13 @@ export async function POST(request: Request) {
       image: imageUrl,
     });
 
-    // Create document with either provided ID or generated ID
+    // Create document with the generated ID
     const docRef = await databases.createDocument(
       databaseId,
       collectionId,
-      documentId, // Use the extracted or generated ID
+      documentId,
       {
-        // @ts-ignore
-        id: documentId, // Include ID in the document data
         ...validatedData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
       }
     );
 

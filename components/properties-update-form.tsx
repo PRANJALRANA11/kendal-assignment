@@ -36,9 +36,10 @@ const PropertyUpdateForm: React.FC<PropertyFormProps> = ({
   const fetchPropertyData = async () => {
     try {
       const response = await get(`get-property/${propertyId}`);
+      console.log("response ss", response.data);
       setOriginalData(response.data);
-      setPlaceholderData(response.data.documents[0]);
-      console.log("response ss", response.data.documents[0]);
+      setPlaceholderData(response.data);
+
       formik.setValues(response.data);
     } catch (error) {
       console.error("Error fetching property:", error);
@@ -66,7 +67,6 @@ const PropertyUpdateForm: React.FC<PropertyFormProps> = ({
 
   const formik = useFormik({
     initialValues: {
-      id: "",
       name: "",
       description: "",
       image: null,
