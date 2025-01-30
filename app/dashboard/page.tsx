@@ -78,7 +78,9 @@ export default function Dashboard() {
     });
   };
 
+  // Function to handle property updates
   const handlePropertyChange = (id: string, updatedData: Partial<Property>) => {
+    // Update the properties state by mapping over the previous properties
     setProperties((prevProperties) =>
       prevProperties.map((property) =>
         property.$id === id ? { ...property, ...updatedData } : property
@@ -86,6 +88,7 @@ export default function Dashboard() {
     );
   };
 
+  // for adjusting sidebar width on desk and mob
   const sidebarStyle: React.CSSProperties = {
     "--sidebar-width": "40rem", // Custom CSS property
     "--sidebar-width-mobile": "20rem",

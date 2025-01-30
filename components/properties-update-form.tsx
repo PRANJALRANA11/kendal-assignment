@@ -33,6 +33,7 @@ const PropertyUpdateForm: React.FC<PropertyFormProps> = ({
     }
   }, [propertyId, isDialogOpen]);
 
+  // fetch single property data
   const fetchPropertyData = async () => {
     try {
       const response = await get(`get-property/${propertyId}`);
@@ -121,6 +122,7 @@ const PropertyUpdateForm: React.FC<PropertyFormProps> = ({
     },
   });
 
+  // handle the image updation
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
