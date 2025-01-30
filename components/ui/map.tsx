@@ -147,77 +147,79 @@ const MapView: React.FC<MapComponentProps> = ({
   };
 
   return (
-    <MapContainer
-      center={[37.7749, -122.4194]}
-      zoom={13}
-      className="h-full w-[100vh] z-0"
-      ref={mapRef}
-    >
-      <FeatureGroup>
-        <EditControl
-          position="topright"
-          onCreated={handleDrawCreated}
-          onDeleted={handleDrawDeleted}
-          draw={{
-            rectangle: false,
-            circle: false,
-            circlemarker: false,
-            marker: false,
-            polyline: false,
-          }}
-        />
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-
-        <MapController
-          selectedPropertyId={selectedPropertyId}
-          properties={properties}
-          filteredProperties={filteredProperties}
-        />
-
-        {filteredProperties.map((property) => (
-          <Marker
-            key={property.$id}
-            position={[property.latitude, property.longitude]}
-            ref={(marker) => {
-              if (marker) markerRefs.current[property.$id] = marker;
+    <div className="relative h-screen">
+      <MapContainer
+        center={[37.7749, -122.4194]}
+        zoom={13}
+        className="h-full w-full z-0"
+        ref={mapRef}
+      >
+        <FeatureGroup>
+          <EditControl
+            position="topright"
+            onCreated={handleDrawCreated}
+            onDeleted={handleDrawDeleted}
+            draw={{
+              rectangle: false,
+              circle: false,
+              circlemarker: false,
+              marker: false,
+              polyline: false,
             }}
-            eventHandlers={{
-              click: () => setSelectedPropertyId(property.$id),
-            }}
-            icon={
-              selectedPropertyId === property.$id ? selectedIcon : customIcon
-            }
-          >
-            <Popup className="property-popup">
-              <div className="max-w-xs">
-                <img
-                  src={property.image || ""}
-                  alt={property.name}
-                  className="w-full h-32 object-cover rounded-t-lg"
-                />
-                <div className="p-3">
-                  <h3 className="font-semibold text-lg">{property.name}</h3>
-                  <p className="text-primary font-medium">
-                    {formatPrice(property.price)}
-                  </p>
-                  <div className="flex gap-3 text-sm text-gray-600 mt-2">
-                    <span>{property.bedrooms} beds</span>
-                    <span>{property.bathrooms} baths</span>
-                    <span>{property.area} sq ft</span>
+          />
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+
+          <MapController
+            selectedPropertyId={selectedPropertyId}
+            properties={properties}
+            filteredProperties={filteredProperties}
+          />
+
+          {filteredProperties.map((property) => (
+            <Marker
+              key={property.$id}
+              position={[property.latitude, property.longitude]}
+              ref={(marker) => {
+                if (marker) markerRefs.current[property.$id] = marker;
+              }}
+              eventHandlers={{
+                click: () => setSelectedPropertyId(property.$id),
+              }}
+              icon={
+                selectedPropertyId === property.$id ? selectedIcon : customIcon
+              }
+            >
+              <Popup className="property-popup">
+                <div className="max-w-xs">
+                  <img
+                    src={property.image || ""}
+                    alt={property.name}
+                    className="w-full h-32 object-cover rounded-t-lg"
+                  />
+                  <div className="p-3">
+                    <h3 className="font-semibold text-lg">{property.name}</h3>
+                    <p className="text-primary font-medium">
+                      {formatPrice(property.price)}
+                    </p>
+                    <div className="flex gap-3 text-sm text-gray-600 mt-2">
+                      <span>{property.bedrooms} beds</span>
+                      <span>{property.bathrooms} baths</span>
+                      <span>{property.area} sq ft</span>
+                    </div>
+                    <p className="text-sm mt-2 text-gray-600">
+                      {property.description}
+                    </p>
                   </div>
-                  <p className="text-sm mt-2 text-gray-600">
-                    {property.description}
-                  </p>
                 </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </FeatureGroup>
-    </MapContainer>
+              </Popup>
+            </Marker>
+          ))}
+        </FeatureGroup>
+      </MapContainer>
+    </div>
   );
 };
 
